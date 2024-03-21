@@ -121,25 +121,32 @@ export default function Donate() {
       const lotPattern = /\(10\)(?<lot>\d+)/;
       const expPattern = /\(17\)(?<exp>\d+)/;
       const serialPattern = /\(21\)(?<serial>\d+)/;
-
+  
       // Extract the GTIN, LOT, EXP, and serial number from the scanned data
       const gtinMatch = data.match(gtinPattern);
       const lotMatch = data.match(lotPattern);
       const expMatch = data.match(expPattern);
       const serialMatch = data.match(serialPattern);
-
-      if (gtinMatch?.groups && lotMatch?.groups && expMatch?.groups && serialMatch?.groups) {
+  
+      // Log matched data for debugging
+      console.log("Matched GTIN:", gtinMatch?.groups?.gtin);
+      console.log("Matched Lot:", lotMatch?.groups?.lot);
+      console.log("Matched EXP:", expMatch?.groups?.exp);
+      console.log("Matched Serial:", serialMatch?.groups?.serial);
+  
+      // Ensure all required data elements are present before updating state
+      if (gtinMatch?.groups?.gtin && lotMatch?.groups?.lot && expMatch?.groups?.exp) {
         const scannedGtin = gtinMatch.groups.gtin;
         const scannedLot = lotMatch.groups.lot;
         const scannedExp = expMatch.groups.exp;
-        const scannedSerial = serialMatch.groups.serial;
-
+        const scannedSerial = serialMatch?.groups?.serial || ''; // Serial number may be optional
+  
         // Log individual scanned values
         console.log("Scanned GTIN:", scannedGtin);
         console.log("Scanned Lot:", scannedLot);
         console.log("Scanned EXP:", scannedExp);
         console.log("Scanned Serial:", scannedSerial);
-
+  
         // Update state with the scanned data
         setDonationForm({
           ...donationForm,
@@ -148,7 +155,7 @@ export default function Donate() {
           scannedExp,
           scannedSerial,
         });
-
+  
         // Close the scan modal after scanning
         setScanBarcodeVisible(false);
         setShowScannedInputs(true);
@@ -162,6 +169,7 @@ export default function Donate() {
       setErrorMessage(error.message);
     }
   };
+  
   const handleScanBarcode = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
     if (status === "granted") {
