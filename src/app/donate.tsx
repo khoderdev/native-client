@@ -113,50 +113,56 @@ export default function Donate() {
       setErrorVisible(true);
     }
   };
-
-  const handleBarcodeScanned = ({
-    type,
-    data,
-  }: {
-    type: string;
-    data: string;
-  }) => {
-    console.log(
-      `Bar code with type ${type} and data ${data} has been scanned!`
-    );
+  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+    console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
     try {
-      // Remove unwanted characters from the scanned data
-      const cleanData = data.replace(/[^0-9A-Za-z↔]/g, "");
-
-      // Extracting GTIN, LOT, and EXP from the cleaned scanned data
-      const scannedGtin = cleanData.substring(1, 16);
-      let scannedLot = cleanData.substring(16, 21); // Extracting 5-digit LOT value
-      let scannedExp = cleanData.substring(21);
-
-      // Manipulating the scanned LOT and EXP values
-      scannedLot = scannedLot.substring(2) + scannedExp.substring(0, 2); // Remove first 2 digits from LOT and add first 2 digits from EXP
-      scannedExp = scannedExp.substring(2); // Remove first 2 digits from EXP
-
-      // Log individual scanned values
-      console.log("Scanned GTIN:", scannedGtin);
-      console.log("Scanned LOT:", scannedLot);
-      console.log("Scanned EXP:", scannedExp);
-
-      // Update state with the assigned data parts
-      setDonationForm({ ...donationForm, scannedGtin, scannedLot, scannedExp });
-
-      console.log("Scanned data:", cleanData); // Logging scanned data
-
-      // Close the scan modal after scanning
-      setScanBarcodeVisible(false);
+      // Parse GS1 AI (Application Identifiers) from the scanned data
+      const aiMatches = data.match(/\(01\)\d+\(10\)\d{4,}\(17\)\d{6}\(21\)\d{6}/);
+      if (aiMatches && aiMatches.length > 0) {
+        const aiData = aiMatches[0];
+  
+        // Extract GTIN, lot number, expiry date, and serial number from AI data
+        const scannedGtinMatch = aiData.match(/\(01\)\d+/);
+        const scannedLotMatch = aiData.match(/\(10\)\d{4,}/);
+        const scannedExpMatch = aiData.match(/\(17\)\d{6}/);
+        const scannedSerialMatch = aiData.match(/\(21\)\d{6}/);
+  
+        if (scannedGtinMatch && scannedLotMatch && scannedExpMatch && scannedSerialMatch) {
+          const scannedGtin = scannedGtinMatch[0].substring(3);
+          const scannedLot = scannedLotMatch[0].substring(4);
+          const scannedExp = scannedExpMatch[0].substring(4);
+          const scannedSerial = scannedSerialMatch[0].substring(4);
+  
+          // Log individual scanned values
+          console.log("Scanned GTIN:", scannedGtin);
+          console.log("Scanned Lot:", scannedLot);
+          console.log("Scanned EXP:", scannedExp);
+          console.log("Scanned Serial:", scannedSerial);
+  
+          // Update state with the scanned data
+          setDonationForm({
+            ...donationForm,
+            scannedGtin,
+            scannedLot,
+            scannedExp,
+            scannedSerial,
+          });
+  
+          // Close the scan modal after scanning
+          setScanBarcodeVisible(false);
+          setShowScannedInputs(true);
+          return;
+        }
+      }
+      throw new Error("Failed to parse AI data from the scanned barcode.");
     } catch (error) {
-      // Logging error if any occurs during parsing scanned data
       console.error("Error parsing scanned data:", error);
       // Handle error, such as displaying an error message to the user
+      setErrorVisible(true);
+      setErrorMessage(error.message);
     }
-    setShowScannedInputs(true);
   };
-
+  
   const handleScanBarcode = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
     if (status === "granted") {
