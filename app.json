@@ -12,6 +12,14 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "android": {
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ],
+      "package": "com.medleb.donation"
+    },
     "plugins": [
       [
         "expo-barcode-scanner",
@@ -30,6 +38,14 @@
     "slug": "med-donation",
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://n"
+      },
+      "eas": {
+        "projectId": "b4c6bc77-2d9c-40eb-b654-3b60f0d64c65"
+      }
     }
   }
 }

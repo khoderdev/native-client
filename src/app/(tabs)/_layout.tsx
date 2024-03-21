@@ -16,7 +16,7 @@ function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={32} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TabLayout() {
@@ -24,28 +24,30 @@ export default function TabLayout() {
 
   return (
     <>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          // Disable the static render of the header on web
-          // to prevent a hydration error in React Navigation v6.
-          headerShown: useClientOnlyValue(false, true),
-        }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Home',
-            tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="two"
-          options={{
-            title: 'List',
-            tabBarIcon: ({ color }) => <TabBarIcon name="heartbeat" color={color} />,
-          }}
-        />
-      </Tabs>
+      <View className='h-full bg-red-500'>
+        <Tabs
+          screenOptions={{
+            tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+            // Disable the static render of the header on web
+            // to prevent a hydration error in React Navigation v6.
+            headerShown: useClientOnlyValue(false, true),
+          }}>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Home',
+              tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="two"
+            options={{
+              title: 'List',
+              tabBarIcon: ({ color }) => <TabBarIcon name="heartbeat" color={color} />,
+            }}
+          />
+        </Tabs>
+      </View>
     </>
   );
 }
@@ -56,6 +58,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 30,
     zIndex: 9999,
+
   },
 
 });

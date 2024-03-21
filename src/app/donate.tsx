@@ -1,34 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TextInput, StatusBar, Platform, Modal, TouchableWithoutFeedback, Text, Dimensions, ScrollView } from 'react-native';
-import { useDonationContext } from './contexts/DonationContext';
-import { Camera } from 'expo-camera';
-import { TouchableOpacity } from 'react-native';
-import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Keyboard } from 'react-native';
-import CameraComponent from './camera';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  StatusBar,
+  Platform,
+  Modal,
+  TouchableWithoutFeedback,
+  Text,
+  Dimensions,
+  ScrollView,
+} from "react-native";
+import { useDonationContext } from "./contexts/DonationContext";
+import { Camera } from "expo-camera";
+import { TouchableOpacity } from "react-native";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Keyboard } from "react-native";
 
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
-
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
-
-const SuccessMessage = ({ visible }: { visible: boolean }) => (
+const SuccessMessage = ({ visible }: { visible: boolean }) =>
   visible ? (
     <View style={styles.successMessage}>
       <AntDesign name="checkcircle" size={24} color="white" />
       <Text style={styles.successText}>Success</Text>
     </View>
-  ) : null
-);
+  ) : null;
 
-const ErrorMessage = ({ visible, message }: { visible: boolean, message: string }) => (
+const ErrorMessage = ({
+  visible,
+  message,
+}: {
+  visible: boolean;
+  message: string;
+}) =>
   visible ? (
     <View style={styles.errorText}>
       <AntDesign name="exclamationcircle" size={24} color="white" />
       <Text style={styles.errorText}>{message}</Text>
     </View>
-  ) : null
-);
+  ) : null;
 
 export default function Donate() {
   const { donationForm, setDonationForm, addDonation } = useDonationContext();
@@ -37,7 +49,7 @@ export default function Donate() {
   const [successVisible, setSuccessVisible] = useState(false);
   const [touchedScreen, setTouchedScreen] = useState(false);
   const [errorVisible, setErrorVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
 
   const handleFocus = (inputName) => {
@@ -58,35 +70,17 @@ export default function Donate() {
     return () => clearTimeout(timer);
   }, [touchedScreen]);
 
-  // const handleSubmit = () => {
-  //   Keyboard.dismiss();
-
-  //   addDonation();
-  //   setDonationForm({
-  //     name: '',
-  //     presentation: '',
-  //     form: '',
-  //     laboratory: '',
-  //     scannedLot: '',
-  //     scannedExp: '',
-  //     scannedGtin: '',
-  //   });
-  //   setSuccessVisible(true);
-
-  //   // Hide the success message after 2 seconds
-  //   setTimeout(() => {
-  //     setSuccessVisible(false);
-  //   }, 2000);
-  // };
-
-
   const handleSubmit = async () => {
     try {
       Keyboard.dismiss();
 
       // Perform form validation
-      if (!donationForm.scannedLot || !donationForm.scannedExp || !donationForm.scannedGtin) {
-        throw new Error('you must scan the required Barcode fields.');
+      if (
+        !donationForm.scannedLot ||
+        !donationForm.scannedExp ||
+        !donationForm.scannedGtin
+      ) {
+        throw new Error("you must scan the required Barcode fields.");
       }
 
       // Add donation
@@ -94,13 +88,13 @@ export default function Donate() {
 
       // Clear form fields only if submission is successful
       setDonationForm({
-        name: '',
-        presentation: '',
-        form: '',
-        laboratory: '',
-        scannedLot: '',
-        scannedExp: '',
-        scannedGtin: '',
+        name: "",
+        presentation: "",
+        form: "",
+        laboratory: "",
+        scannedLot: "",
+        scannedExp: "",
+        scannedGtin: "",
       });
 
       // Display success message
@@ -111,8 +105,8 @@ export default function Donate() {
         setSuccessVisible(false);
       }, 2000);
     } catch (error: any) {
-      if (error.message === 'Failed to add donation') {
-        setErrorMessage('Failed to add donation.');
+      if (error.message === "Failed to add donation") {
+        setErrorMessage("Failed to add donation.");
       } else {
         setErrorMessage(error.message); // Handle other types of errors
       }
@@ -120,9 +114,16 @@ export default function Donate() {
     }
   };
 
-
-  const handleBarcodeScanned = ({ type, data }: { type: string, data: string }) => {
-    console.log(`Bar code with type ${type} and data ${data} has been scanned!`);
+  const handleBarcodeScanned = ({
+    type,
+    data,
+  }: {
+    type: string;
+    data: string;
+  }) => {
+    console.log(
+      `Bar code with type ${type} and data ${data} has been scanned!`
+    );
     try {
       // Remove unwanted characters from the scanned data
       const cleanData = data.replace(/[^0-9A-Za-z↔]/g, "");
@@ -154,7 +155,6 @@ export default function Donate() {
       // Handle error, such as displaying an error message to the user
     }
     setShowScannedInputs(true);
-
   };
 
   const handleScanBarcode = async () => {
@@ -174,22 +174,28 @@ export default function Donate() {
     Keyboard.dismiss();
   };
 
-
   return (
-    <ScrollView className='bg-zinc-800' contentContainerStyle={styles.container}>
+    <ScrollView
+      className="bg-zinc-800"
+      contentContainerStyle={styles.container}
+    >
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View style={styles.container}>
-
           <View style={styles.inputsContainer}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Name:</Text>
               <TextInput
                 value={donationForm.name}
-                onChangeText={(text) => setDonationForm({ ...donationForm, name: text })}
+                onChangeText={(text) =>
+                  setDonationForm({ ...donationForm, name: text })
+                }
                 placeholder="Name"
                 placeholderTextColor="#999"
-                style={[styles.input, focusedInput === 'name' && styles.inputFocused]}
-                onFocus={() => handleFocus('name')}
+                style={[
+                  styles.input,
+                  focusedInput === "name" && styles.inputFocused,
+                ]}
+                onFocus={() => handleFocus("name")}
                 onBlur={handleBlur}
               />
             </View>
@@ -198,11 +204,16 @@ export default function Donate() {
               <Text style={styles.label}>Presentation:</Text>
               <TextInput
                 value={donationForm.presentation}
-                onChangeText={(text) => setDonationForm({ ...donationForm, presentation: text })}
+                onChangeText={(text) =>
+                  setDonationForm({ ...donationForm, presentation: text })
+                }
                 placeholder="Presentation"
                 placeholderTextColor="#999"
-                style={[styles.input, focusedInput === 'presentation' && styles.inputFocused]}
-                onFocus={() => handleFocus('presentation')}
+                style={[
+                  styles.input,
+                  focusedInput === "presentation" && styles.inputFocused,
+                ]}
+                onFocus={() => handleFocus("presentation")}
                 onBlur={handleBlur}
               />
             </View>
@@ -211,11 +222,16 @@ export default function Donate() {
               <Text style={styles.label}>Form:</Text>
               <TextInput
                 value={donationForm.form}
-                onChangeText={(text) => setDonationForm({ ...donationForm, form: text })}
+                onChangeText={(text) =>
+                  setDonationForm({ ...donationForm, form: text })
+                }
                 placeholder="Form"
                 placeholderTextColor="#999"
-                style={[styles.input, focusedInput === 'form' && styles.inputFocused]}
-                onFocus={() => handleFocus('form')}
+                style={[
+                  styles.input,
+                  focusedInput === "form" && styles.inputFocused,
+                ]}
+                onFocus={() => handleFocus("form")}
                 onBlur={handleBlur}
               />
             </View>
@@ -224,11 +240,16 @@ export default function Donate() {
               <Text style={styles.label}>Laboratory:</Text>
               <TextInput
                 value={donationForm.laboratory}
-                onChangeText={(text) => setDonationForm({ ...donationForm, laboratory: text })}
+                onChangeText={(text) =>
+                  setDonationForm({ ...donationForm, laboratory: text })
+                }
                 placeholder="Laboratory"
                 placeholderTextColor="#999"
-                style={[styles.input, focusedInput === 'laboratory' && styles.inputFocused]}
-                onFocus={() => handleFocus('laboratory')}
+                style={[
+                  styles.input,
+                  focusedInput === "laboratory" && styles.inputFocused,
+                ]}
+                onFocus={() => handleFocus("laboratory")}
                 onBlur={handleBlur}
               />
             </View>
@@ -239,7 +260,9 @@ export default function Donate() {
               {showScannedInputs && (
                 <TextInput
                   value={donationForm.scannedLot}
-                  onChangeText={(text) => setDonationForm({ ...donationForm, scannedLot: text })}
+                  onChangeText={(text) =>
+                    setDonationForm({ ...donationForm, scannedLot: text })
+                  }
                   placeholder="Scanned Lot#"
                   placeholderTextColor="#999"
                   style={styles.input}
@@ -252,7 +275,9 @@ export default function Donate() {
               {showScannedInputs && (
                 <TextInput
                   value={donationForm.scannedExp}
-                  onChangeText={(text) => setDonationForm({ ...donationForm, scannedExp: text })}
+                  onChangeText={(text) =>
+                    setDonationForm({ ...donationForm, scannedExp: text })
+                  }
                   placeholder="Scanned Exp"
                   placeholderTextColor="#999"
                   style={styles.input}
@@ -265,7 +290,9 @@ export default function Donate() {
               {showScannedInputs && (
                 <TextInput
                   value={donationForm.scannedGtin}
-                  onChangeText={(text) => setDonationForm({ ...donationForm, scannedGtin: text })}
+                  onChangeText={(text) =>
+                    setDonationForm({ ...donationForm, scannedGtin: text })
+                  }
                   placeholder="Scanned Gtin"
                   placeholderTextColor="#999"
                   style={styles.input}
@@ -311,22 +338,22 @@ export default function Donate() {
           </Modal>
 
           {/* Include other components */}
-          <StatusBar backgroundColor={Platform.OS === 'ios' ? 'white' : 'transparent'} />
+          <StatusBar
+            backgroundColor={Platform.OS === "ios" ? "white" : "transparent"}
+          />
         </View>
-
-      </TouchableWithoutFeedback >
+      </TouchableWithoutFeedback>
     </ScrollView>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    alignItems: "center",
+    justifyContent: "flex-start",
     // backgroundColor: "#222831",
-    position: 'relative',
+    position: "relative",
     padding: 10,
   },
   inputsContainer: {
@@ -338,7 +365,7 @@ const styles = StyleSheet.create({
     // position: 'relative',
   },
   input: {
-    color: '#fff',
+    color: "#fff",
     height: windowHeight * 0.05,
     width: windowWidth * 0.8,
     marginVertical: windowHeight * 0.01,
@@ -346,54 +373,53 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: "#fff",
     padding: 10,
-
   },
   placeholder: {
-    color: "#fff"
+    color: "#fff",
   },
   inputFocused: {
-    borderColor: '#0096FF',
+    borderColor: "#0096FF",
   },
 
   inputGroup: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
+    flexDirection: "column",
+    alignItems: "flex-start",
     // marginBottom: 5,
   },
   label: {
     color: "#fff",
     marginRight: 10,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   successMessage: {
-    backgroundColor: '#00a651',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#00a651",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 8,
     borderRadius: 5,
     marginTop: 10,
   },
   successText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     marginLeft: 5,
   },
   errorTextContainer: {
-    alignItems: 'center',
-    color: 'red',
-    fontWeight: 'bold',
+    alignItems: "center",
+    color: "red",
+    fontWeight: "bold",
     marginTop: 5,
   },
   errorText: {
-    color: 'red',
-    fontWeight: 'bold',
+    color: "red",
+    fontWeight: "bold",
     marginLeft: 5,
     marginTop: 5,
   },
   closeButton: {
-    position: 'absolute',
+    position: "absolute",
     top: windowHeight * 0.05,
     right: windowWidth * 0.05,
     zIndex: 1,
@@ -408,31 +434,28 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto",
   },
   scanIcon: {
-
     color: "#0096FF",
     bottom: windowHeight * -0.3,
     left: windowWidth * 0.4,
     zIndex: 1,
   },
   submitButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -50,
     left: 100,
     zIndex: 1,
-    backgroundColor: '#0096FF',
+    backgroundColor: "#0096FF",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
   },
   submitButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 
-
 function setError(arg0: string) {
-  throw new Error('Function not implemented.');
+  throw new Error("Function not implemented.");
 }
-

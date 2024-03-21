@@ -44,7 +44,7 @@ const NoteInputModal = ({ visible, onClose, onSubmit, note, isEdit }) => {
 
     try {
       const response = await fetch(
-        "http://1.1.1.250:5000/api/donations",
+        "http://localhost:5000/api/donations",
         requestOptions
       );
       const data = await response.json();

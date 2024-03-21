@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
 //     };
 
 //     try {
-//       const response = await fetch("http://1.1.1.250:5000/api/donations", requestOptions);
+//       const response = await fetch("http://localhost:5000/api/donations", requestOptions);
 //       const data = await response.json();
 
 //       onSubmit(data); // Assuming onSubmit function handles the response data

@@ -12,6 +12,7 @@ interface DonationDetailsProps {
         scannedLot: string;
         scannedExp: string;
         scannedGtin: string;
+        scannedSerial: string;
     };
     onClose: () => void;
 }
@@ -47,6 +48,8 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                         <Text style={styles.value}>{donation.scannedExp}</Text>
                         <Text style={styles.label}>GTIN:</Text>
                         <Text style={styles.value}>{donation.scannedGtin}</Text>
+                        <Text style={styles.label}>SN:</Text>
+                        <Text style={styles.value}>{donation.scannedSerial}</Text>
                     </View>
                 </View>
             </Pressable>

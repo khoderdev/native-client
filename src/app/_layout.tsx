@@ -68,7 +68,7 @@ function RootLayoutNav() {
             title: appName, // Set the status bar name dynamically
           }}
         />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        {/* <Stack.Screen name="modal" options={{ presentation: 'modal' }} /> */}
       </Stack>
     </ThemeProvider>
   );
