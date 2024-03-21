@@ -116,55 +116,90 @@ export default function Donate() {
   const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
     try {
-      // Define the regular expressions for the GS1 Application Identifiers (AIs)
-      const aiPattern = /\((\d{2})([^\)]+)\)/g;
+        const response = { gtin: '', lot: '', sn: '', exp: '' };
+        let responseCode = data;
 
-      // Extract all AIs from the scanned data
-      let aiMatches = [...data.matchAll(aiPattern)];
+        const prefixes = [
+            { prefix: '01', key: 'gtin', length: 14 },
+            { prefix: '17', key: 'exp', length: 6 }
+        ];
 
-      // Parse the fixed-width AIs (GTIN, lot number, expiry date)
-      const fixedWidthAIs = aiMatches.slice(0, 3); // Assuming the first 3 AIs are fixed-width
-      const scannedGtin = fixedWidthAIs.find(match => match[1] === '01')?.[2];
-      const scannedLot = fixedWidthAIs.find(match => match[1] === '10')?.[2];
-      const scannedExp = fixedWidthAIs.find(match => match[1] === '17')?.[2];
+        // Iterate through each prefix to extract data
+        prefixes.forEach(({ prefix, key, length }) => {
+            const position = responseCode.indexOf(prefix);
 
-      // Use the special function character (FNC1) or any other delimiter to identify and separate variable-width AIs
-      const variableWidthAIs = aiMatches.slice(3);
-  
-      // Parse the variable-width AIs based on their specific lengths or any additional delimiters used
-      let scannedSerial = '';
-      variableWidthAIs.forEach(match => {
-        if (match[1] === '21') {
-          scannedSerial = match[2];
-        }
-        // Add parsing logic for other variable-width AIs as needed
-      });
-  
-      // Log individual scanned values
-      console.log("Scanned GTIN:", scannedGtin);
-      console.log("Scanned Lot:", scannedLot);
-      console.log("Scanned EXP:", scannedExp);
-      console.log("Scanned Serial:", scannedSerial);
-  
-      // Update state with the scanned data
-      setDonationForm({
-        ...donationForm,
-        scannedGtin,
-        scannedLot,
-        scannedExp,
-        scannedSerial,
-      });
-  
-      // Close the scan modal after scanning
-      setScanBarcodeVisible(false);
-      setShowScannedInputs(true);
+            if (position !== -1) {
+                const start = position + prefix.length;
+                const end = start + length;
+
+                response[key] = responseCode.substring(start, end);
+                responseCode = responseCode.slice(0, position) + responseCode.slice(end);
+            }
+        });
+
+        // Helper function to extract lot number and serial number
+        const extractLotAndSn = (responseCode: string) => {
+            const pattern = /^(10.+?)(?=10|21)(21.+?)$|^(21.+?)(?=10|21)(10.+?)$/;
+            const matches = responseCode.match(pattern);
+            if (!matches) return { lot: '', sn: '' };
+
+            const [lot1, sn1, sn2, lot2] = matches.slice(1);
+            const lot = (lot1 || lot2 || '').substring(2);
+            const sn = (sn1 || sn2 || '').substring(2);
+            return checkLotAndSn(lot, sn, responseCode);
+        };
+
+        // Helper function to check and adjust lot and serial numbers
+        const checkLotAndSn = (lot: string, sn: string, responseCode: string) => {
+            if (responseCode.includes("1010") && !responseCode.includes("10100")) {
+                const isLotStart = lot.startsWith("10");
+                if (isLotStart) {
+                    lot = lot.slice(2);
+                    sn += "10";
+                }
+            } else if (responseCode.includes("2121") && responseCode.includes("21210")) {
+                const isSnStart = sn.startsWith("21");
+                if (isSnStart) {
+                    sn = sn.slice(2);
+                    lot += "21";
+                }
+            }
+
+            return { lot, sn };
+        };
+
+        // Extract lot number and serial number
+        const lotAndSn = extractLotAndSn(responseCode);
+        response.lot = lotAndSn.lot;
+        response.sn = lotAndSn.sn;
+
+        // Log individual scanned values
+        console.log("Scanned GTIN:", response.gtin);
+        console.log("Scanned Lot:", response.lot);
+        console.log("Scanned EXP:", response.exp);
+        console.log("Scanned Serial:", response.sn);
+
+        // Update state with the scanned data
+        setDonationForm({
+            ...donationForm,
+            scannedGtin: response.gtin,
+            scannedLot: response.lot,
+            scannedExp: response.exp,
+            scannedSerial: response.sn,
+        });
+
+        // Close the scan modal after scanning
+        setScanBarcodeVisible(false);
+        setShowScannedInputs(true);
     } catch (error) {
-      console.error("Error parsing scanned data:", error);
-      // Handle error, such as displaying an error message to the user
-      setErrorVisible(true);
-      setErrorMessage(error.message);
+        console.error("Error parsing scanned data:", error);
+        // Handle error, such as displaying an error message to the user
+        setErrorVisible(true);
+        setErrorMessage(error.message);
     }
-  };
+};
+
+
   
   
   const handleScanBarcode = async () => {
