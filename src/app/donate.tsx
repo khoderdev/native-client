@@ -137,17 +137,26 @@ export default function Donate() {
             }
         });
 
-        // Helper function to extract lot number and serial number
         const extractLotAndSn = (responseCode: string) => {
-            const pattern = /^(10.+?)(?=10|21)(21.+?)$|^(21.+?)(?=10|21)(10.+?)$/;
-            const matches = responseCode.match(pattern);
-            if (!matches) return { lot: '', sn: '' };
-
-            const [lot1, sn1, sn2, lot2] = matches.slice(1);
-            const lot = (lot1 || lot2 || '').substring(2);
-            const sn = (sn1 || sn2 || '').substring(2);
-            return checkLotAndSn(lot, sn, responseCode);
-        };
+          const pattern = /^(10.+?)(?=10|21)(21.+?)$|^(21.+?)(?=10|21)(10.+?)$/;
+          const matches = responseCode.match(pattern);
+          if (!matches) return { lot: '', sn: '' };
+      
+          const [lot1, sn1, sn2, lot2] = matches.slice(1);
+          let lot = '';
+          let sn = '';
+      
+          // Determine which part corresponds to lot and which one corresponds to serial
+          if (lot1 && sn2) {
+              lot = lot1.substring(2);
+              sn = sn2.substring(2);
+          } else if (sn1 && lot2) {
+              lot = lot2.substring(2);
+              sn = sn1.substring(2);
+          }
+      
+          return checkLotAndSn(lot, sn, responseCode);
+      };
 
         // Helper function to check and adjust lot and serial numbers
         const checkLotAndSn = (lot: string, sn: string, responseCode: string) => {
