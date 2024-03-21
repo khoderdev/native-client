@@ -32,16 +32,6 @@ export default function TabOneScreen() {
             />
           </View>
         </Link>
-
-        <Link
-          suppressHighlighting
-          className="flex  mt-10 items-center justify-center overflow-hidden rounded-md bg-[#0096FF] px-4 py-4 text-sm font-medium text-white web:shadow ios:shadow transition-colors hover:bg-gray-900/90 active:bg-gray-400/90 web:focus-visible:outline-none web:focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-          href="/camera"
-        >
-          <View className="flex flex-row items-center justify-center">
-            <Text className="text-white font-bold">Scan</Text>
-          </View>
-        </Link>
       </View>
     </DonationProvider>
   );
