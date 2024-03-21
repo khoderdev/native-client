@@ -113,7 +113,7 @@ export default function Donate() {
       setErrorVisible(true);
     }
   };
-const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
     try {
         const response = { gtin: '', lot: '', sn: '', exp: '' };
@@ -126,6 +126,7 @@ const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) =>
             { prefix: '21', key: 'sn' },
         ];
 
+        // Iterate through each prefix to extract data
         prefixes.forEach(({ prefix, key, length }) => {
             const position = responseCode.indexOf(prefix);
 
@@ -172,6 +173,7 @@ const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) =>
         setErrorMessage(error.message);
     }
 };
+
   
   
   const handleScanBarcode = async () => {
