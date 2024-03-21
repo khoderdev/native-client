@@ -113,7 +113,7 @@ export default function Donate() {
       setErrorVisible(true);
     }
   };
-  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
     try {
         const response = { gtin: '', lot: '', sn: '', exp: '' };
@@ -121,66 +121,31 @@ export default function Donate() {
 
         const prefixes = [
             { prefix: '01', key: 'gtin', length: 14 },
-            { prefix: '17', key: 'exp', length: 6 }
+            { prefix: '17', key: 'exp', length: 6 },
+            { prefix: '10', key: 'lot' },
+            { prefix: '21', key: 'sn' },
         ];
 
-        // Iterate through each prefix to extract data
         prefixes.forEach(({ prefix, key, length }) => {
             const position = responseCode.indexOf(prefix);
 
             if (position !== -1) {
                 const start = position + prefix.length;
-                const end = start + length;
+                let end;
+
+                if (length) {
+                    // For fixed-length AIs, calculate the end position based on the length
+                    end = start + length;
+                } else {
+                    // For variable-length AIs, find the position of the next GS or the end of the string
+                    const gsPosition = responseCode.indexOf(String.fromCharCode(29), start);
+                    end = gsPosition !== -1 ? gsPosition : responseCode.length;
+                }
 
                 response[key] = responseCode.substring(start, end);
                 responseCode = responseCode.slice(0, position) + responseCode.slice(end);
             }
         });
-
-        const extractLotAndSn = (responseCode: string) => {
-          const pattern = /^(10.+?)(?=10|21)(21.+?)$|^(21.+?)(?=10|21)(10.+?)$/;
-          const matches = responseCode.match(pattern);
-          if (!matches) return { lot: '', sn: '' };
-      
-          const [lot1, sn1, sn2, lot2] = matches.slice(1);
-          let lot = '';
-          let sn = '';
-      
-          // Determine which part corresponds to lot and which one corresponds to serial
-          if (lot1 && sn2) {
-              lot = lot1.substring(2);
-              sn = sn2.substring(2);
-          } else if (sn1 && lot2) {
-              lot = lot2.substring(2);
-              sn = sn1.substring(2);
-          }
-      
-          return checkLotAndSn(lot, sn, responseCode);
-      };
-
-        // Helper function to check and adjust lot and serial numbers
-        const checkLotAndSn = (lot: string, sn: string, responseCode: string) => {
-            if (responseCode.includes("1010") && !responseCode.includes("10100")) {
-                const isLotStart = lot.startsWith("10");
-                if (isLotStart) {
-                    lot = lot.slice(2);
-                    sn += "10";
-                }
-            } else if (responseCode.includes("2121") && responseCode.includes("21210")) {
-                const isSnStart = sn.startsWith("21");
-                if (isSnStart) {
-                    sn = sn.slice(2);
-                    lot += "21";
-                }
-            }
-
-            return { lot, sn };
-        };
-
-        // Extract lot number and serial number
-        const lotAndSn = extractLotAndSn(responseCode);
-        response.lot = lotAndSn.lot;
-        response.sn = lotAndSn.sn;
 
         // Log individual scanned values
         console.log("Scanned GTIN:", response.gtin);
@@ -207,8 +172,6 @@ export default function Donate() {
         setErrorMessage(error.message);
     }
 };
-
-
   
   
   const handleScanBarcode = async () => {
