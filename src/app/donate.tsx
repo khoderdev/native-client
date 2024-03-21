@@ -117,10 +117,10 @@ export default function Donate() {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
     try {
       // Define the regular expressions for the GS1 Application Identifiers (AIs)
-      const gtinPattern = /\(01\)(?<gtin>\d+)/;
-      const lotPattern = /\(10\)(?<lot>\d+)/;
-      const expPattern = /\(17\)(?<exp>\d+)/;
-      const serialPattern = /\(21\)(?<serial>\d+)/;
+      const gtinPattern = /\b01(\d+)/;
+      const lotPattern = /\b10(\S+)/;
+      const expPattern = /\b17(\d{6})/;
+      const serialPattern = /\b21(\S+)/;
   
       // Extract the GTIN, LOT, EXP, and serial number from the scanned data
       const gtinMatch = data.match(gtinPattern);
@@ -129,17 +129,17 @@ export default function Donate() {
       const serialMatch = data.match(serialPattern);
   
       // Log matched data for debugging
-      console.log("Matched GTIN:", gtinMatch?.groups?.gtin);
-      console.log("Matched Lot:", lotMatch?.groups?.lot);
-      console.log("Matched EXP:", expMatch?.groups?.exp);
-      console.log("Matched Serial:", serialMatch?.groups?.serial);
+      console.log("Matched GTIN:", gtinMatch?.[1]);
+      console.log("Matched Lot:", lotMatch?.[1]);
+      console.log("Matched EXP:", expMatch?.[1]);
+      console.log("Matched Serial:", serialMatch?.[1]);
   
       // Ensure all required data elements are present before updating state
-      if (gtinMatch?.groups?.gtin && lotMatch?.groups?.lot && expMatch?.groups?.exp) {
-        const scannedGtin = gtinMatch.groups.gtin;
-        const scannedLot = lotMatch.groups.lot;
-        const scannedExp = expMatch.groups.exp;
-        const scannedSerial = serialMatch?.groups?.serial || ''; // Serial number may be optional
+      if (gtinMatch && lotMatch && expMatch) {
+        const scannedGtin = gtinMatch[1];
+        const scannedLot = lotMatch[1];
+        const scannedExp = expMatch[1];
+        const scannedSerial = serialMatch?.[1] || ''; // Serial number may be optional
   
         // Log individual scanned values
         console.log("Scanned GTIN:", scannedGtin);
@@ -169,6 +169,7 @@ export default function Donate() {
       setErrorMessage(error.message);
     }
   };
+  
   
   const handleScanBarcode = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
