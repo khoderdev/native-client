@@ -117,51 +117,47 @@ export default function Donate() {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
     try {
       // Define the regular expressions for the GS1 Application Identifiers (AIs)
-      const gtinPattern = /\b01(\d+)/;
-      const lotPattern = /\b10(\S+)/;
-      const expPattern = /\b17(\d{6})/;
-      const serialPattern = /\b21(\S+)/;
+      const aiPattern = /\((\d{2})([^\)]+)\)/g;
+
+      // Extract all AIs from the scanned data
+      let aiMatches = [...data.matchAll(aiPattern)];
+
+      // Parse the fixed-width AIs (GTIN, lot number, expiry date)
+      const fixedWidthAIs = aiMatches.slice(0, 3); // Assuming the first 3 AIs are fixed-width
+      const scannedGtin = fixedWidthAIs.find(match => match[1] === '01')?.[2];
+      const scannedLot = fixedWidthAIs.find(match => match[1] === '10')?.[2];
+      const scannedExp = fixedWidthAIs.find(match => match[1] === '17')?.[2];
+
+      // Use the special function character (FNC1) or any other delimiter to identify and separate variable-width AIs
+      const variableWidthAIs = aiMatches.slice(3);
   
-      // Extract the GTIN, LOT, EXP, and serial number from the scanned data
-      const gtinMatch = data.match(gtinPattern);
-      const lotMatch = data.match(lotPattern);
-      const expMatch = data.match(expPattern);
-      const serialMatch = data.match(serialPattern);
+      // Parse the variable-width AIs based on their specific lengths or any additional delimiters used
+      let scannedSerial = '';
+      variableWidthAIs.forEach(match => {
+        if (match[1] === '21') {
+          scannedSerial = match[2];
+        }
+        // Add parsing logic for other variable-width AIs as needed
+      });
   
-      // Log matched data for debugging
-      console.log("Matched GTIN:", gtinMatch?.[1]);
-      console.log("Matched Lot:", lotMatch?.[1]);
-      console.log("Matched EXP:", expMatch?.[1]);
-      console.log("Matched Serial:", serialMatch?.[1]);
+      // Log individual scanned values
+      console.log("Scanned GTIN:", scannedGtin);
+      console.log("Scanned Lot:", scannedLot);
+      console.log("Scanned EXP:", scannedExp);
+      console.log("Scanned Serial:", scannedSerial);
   
-      // Ensure all required data elements are present before updating state
-      if (gtinMatch && lotMatch && expMatch) {
-        const scannedGtin = gtinMatch[1];
-        const scannedLot = lotMatch[1];
-        const scannedExp = expMatch[1];
-        const scannedSerial = serialMatch?.[1] || ''; // Serial number may be optional
+      // Update state with the scanned data
+      setDonationForm({
+        ...donationForm,
+        scannedGtin,
+        scannedLot,
+        scannedExp,
+        scannedSerial,
+      });
   
-        // Log individual scanned values
-        console.log("Scanned GTIN:", scannedGtin);
-        console.log("Scanned Lot:", scannedLot);
-        console.log("Scanned EXP:", scannedExp);
-        console.log("Scanned Serial:", scannedSerial);
-  
-        // Update state with the scanned data
-        setDonationForm({
-          ...donationForm,
-          scannedGtin,
-          scannedLot,
-          scannedExp,
-          scannedSerial,
-        });
-  
-        // Close the scan modal after scanning
-        setScanBarcodeVisible(false);
-        setShowScannedInputs(true);
-        return;
-      }
-      throw new Error("Failed to parse AI data from the scanned barcode.");
+      // Close the scan modal after scanning
+      setScanBarcodeVisible(false);
+      setShowScannedInputs(true);
     } catch (error) {
       console.error("Error parsing scanned data:", error);
       // Handle error, such as displaying an error message to the user
