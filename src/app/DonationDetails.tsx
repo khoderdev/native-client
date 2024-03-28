@@ -1,11 +1,13 @@
+
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Modal, Pressable, ScrollView, TextInput, Button } from "react-native";
+import {Alert, View, Text, StyleSheet, Modal, Pressable, ScrollView, TextInput, Button } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import colors from "../misc/colors";
 import { useDonationContext } from "./contexts/DonationContext";
 
 interface DonationDetailsProps {
     donation: {
+        _id: string;
         DonorName: string;
         RecipientId: string;
         DrugName: string;
@@ -25,7 +27,7 @@ interface DonationDetailsProps {
 }
 
 const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) => {
-    const { donationForm, setDonationForm, recipients } = useDonationContext();
+    const { donationForm, setDonationForm, recipients, updateDonation } = useDonationContext();
     const [editMode, setEditMode] = useState(false);
     const [recipientName, setRecipientName] = useState("");
 
@@ -39,6 +41,22 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
             }
         }
     }, [donation, recipients]);
+
+    // const handleSave = async () => {
+    //     try {
+    //         // Update the donation using the updateDonation function
+    //         await updateDonation(donation._id, donationForm);
+
+    //         onClose(); // Close the modal after saving
+    //     } catch (error) {
+    //         console.error("Error updating donation:", error);
+    //         Alert.alert(
+    //             "Error",
+    //             error.message || "Failed to update donation. Please try again later.",
+    //             [{ text: "OK" }]
+    //         );
+    //     }
+    // };
 
     const handleSave = () => {
         // Update the context state with edited data
@@ -91,10 +109,13 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                                 <Text style={styles.label}>{labelMapping[key]}:</Text>
                                 {key === "RecipientId" ? (
                                     <Text style={styles.value}>{recipientName}</Text>
+                                ) : key === "DonationDate" || key === "ExpiryDate" ? (
+                                    // Display the date value as text without editability
+                                    <Text style={styles.value}>{value}</Text>
                                 ) : (
                                     !editMode ? (
-                                        // Convert Date object to string before rendering
-                                        <Text style={styles.value}>{value instanceof Date ? value.toLocaleDateString() : value}</Text>
+                                        // For other fields, display editable text input in edit mode
+                                        <Text style={styles.value}>{value}</Text>
                                     ) : (
                                         <TextInput
                                             style={styles.input}
@@ -110,6 +131,7 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                                 )}
                             </View>
                         ))}
+
                     </ScrollView>
 
                     {/* Conditionally render "Edit" or "Update" button based on editMode */}
@@ -123,8 +145,6 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
         </Modal>
     );
 };
-
-
 
 const styles = StyleSheet.create({
     modalContainer: {

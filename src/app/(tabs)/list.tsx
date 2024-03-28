@@ -25,6 +25,9 @@ const Donation = () => {
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [storagePermissionGranted, setStoragePermissionGranted] =
     useState(false);
+  const [donationsList, setDonationsList] = useState([]);
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,15 +70,14 @@ const Donation = () => {
 
   const generateExcel = async () => {
     try {
+      // Handle permission request if not granted
       if (!storagePermissionGranted) {
-        // Ask for storage permission if not granted
         const { status } = await MediaLibrary.requestPermissionsAsync();
         setStoragePermissionGranted(status === 'granted');
         if (!storagePermissionGranted) {
-          // Permission not granted
           Alert.alert(
             'Permission Required',
-            "To export data, please grant permission to access your device's storage."
+            "Please grant permission to access your device's storage to export data."
           );
           return;
         }
@@ -87,36 +89,34 @@ const Donation = () => {
         throw new Error('Sharing is not available on this device.');
       }
 
-      // Filtering out the "__v" property from each donation object
+      // Filter out unnecessary properties from donations
       const filteredDonations = donations.map(({ __v, ...rest }) => rest);
 
-      // Creating a new Excel workbook
+      // Create a new Excel workbook
       const wb = XLSX.utils.book_new();
 
-      // Converting the filtered donations data to a worksheet
+      // Convert filtered donations data to a worksheet
       const ws = XLSX.utils.json_to_sheet(filteredDonations);
 
-      // Appending the worksheet to the workbook with the name "Donations"
+      // Append the worksheet to the workbook with the name "Donations"
       XLSX.utils.book_append_sheet(wb, ws, 'Donations');
 
-      // Writing the workbook data to a base64 string
+      // Write workbook data to a base64 string
       const base64 = XLSX.write(wb, { type: 'base64' });
 
-      // Defining the filename for the Excel file
+      // Define filename for the Excel file
       const filename = 'Donations.xlsx';
 
-      // Save the Excel file to device storage
+      // Save Excel file to device storage
       const filePath = `${FileSystem.documentDirectory}${filename}`;
       await FileSystem.writeAsStringAsync(filePath, base64, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      console.log('Excel data written to file:', filePath);
-
-      // Share the Excel file with the user
+      // Share Excel file with the user
       await Sharing.shareAsync(filePath);
 
-      // Display a success message
+      // Display success message
       Alert.alert('Success', 'Excel file exported and saved to device storage.');
     } catch (error) {
       console.error('Error exporting data:', error);
@@ -127,6 +127,7 @@ const Donation = () => {
   if (isLoading) {
     return <Text>Loading...</Text>;
   }
+
 
   return (
     <View style={styles.mainContainer}>

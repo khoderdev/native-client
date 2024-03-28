@@ -56,6 +56,7 @@ export default function Donate() {
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState('');
   const [date, setDate] = useState(new Date());
   const [mode, setMode] = useState('date');
@@ -86,18 +87,15 @@ export default function Donate() {
   };
 
   const handleRecipientChange = (recipientId) => {
-    if (recipientId) {
-      const selectedRecipient = recipients.find(recipient => recipient._id === recipientId);
-      if (selectedRecipient) {
-        setSelectedRecipient(recipientId); // Set selectedRecipient directly since recipientId is now a string
-        setDonationForm(prevState => ({
-          ...prevState,
-          RecipientId: recipientId, // Set recipientId as string
-          RecipientName: selectedRecipient.RecipientName // Set the recipient name in donationForm
-        }));
-      }
-    } else {
-      console.error("Recipient ID is undefined.");
+    const selectedRecipient = recipients.find(recipient => recipient.RecipientId.toString() === recipientId);
+    if (selectedRecipient) {
+      const recipientIdInt = parseInt(recipientId, 10); // Convert recipientId to integer
+      setSelectedRecipient(recipientIdInt.toString()); // Set selectedRecipient as string for consistency
+      setDonationForm(prevState => ({
+        ...prevState,
+        RecipientId: recipientIdInt, // Set recipientId as integer
+        RecipientName: selectedRecipient.RecipientName // Set the recipient name in donationForm
+      }));
     }
   };
 
@@ -130,6 +128,12 @@ export default function Donate() {
 
     return () => clearTimeout(timer);
   }, [touchedScreen]);
+
+
+  // Function to handle submission confirmation
+  const handleConfirmation = () => {
+    setConfirmationVisible(true);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -168,10 +172,11 @@ export default function Donate() {
 
       // Display success message
       setSuccessVisible(true);
-
+      // Display confirmation modal
+      handleConfirmation();
       // Hide the success message after 2 seconds
       setTimeout(() => {
-        setSuccessVisible(false);
+        setSuccessVisible(true);
       }, 2000);
     } catch (error: any) {
       if (error.message === "Failed to add donation") {
@@ -181,6 +186,13 @@ export default function Donate() {
       }
       setErrorVisible(true);
     }
+  };
+
+  // Function to navigate to list screen
+  const goToListScreen = () => {
+    // Navigate to the "/list" screen
+    // Replace this with your navigation logic
+    // console.log("Navigating to list screen...");
   };
 
 
@@ -369,16 +381,16 @@ export default function Donate() {
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={selectedRecipient}
-                    onValueChange={(itemValue) => handleRecipientChange(itemValue)}
+                    onValueChange={handleRecipientChange} // Ensure this is correctly calling handleRecipientChange
                     style={styles.picker}
                     itemStyle={styles.pickerItem}
                   >
                     <Picker.Item label="Select" value="" />
                     {recipients && recipients.map((recipient) => (
                       <Picker.Item
-                        key={recipient._id}
+                        key={recipient.RecipientId}
                         label={recipient.RecipientName}
-                        value={recipient._id}
+                        value={recipient.RecipientId.toString()}
                       />
                     ))}
                   </Picker>
@@ -644,10 +656,30 @@ export default function Donate() {
 
             </Modal>
 
+            {/* Confirmation Modal */}
+            {/* <Modal visible={confirmationVisible} animationType="slide" transparent>
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalText}>Are you sure you want to submit?</Text>
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity onPress={handleSubmit} style={styles.confirmButton}>
+                      <Text style={styles.buttonText}>Yes</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setConfirmationVisible(false)} style={styles.cancelButton}>
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+            <TouchableOpacity onPress={goToListScreen} style={styles.goToListButton}>
+              <Text style={styles.buttonText}>Go to List</Text>
+            </TouchableOpacity> */}
             {/* Include other components */}
-            <StatusBar
+            {/* <StatusBar
               backgroundColor={Platform.OS === "ios" ? "white" : "transparent"}
-            />
+            /> */}
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>

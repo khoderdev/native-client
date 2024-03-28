@@ -22,8 +22,8 @@ export const DonationProvider = ({ children }) => {
   const [recipients, setRecipients] = useState([]);
   const [drugs, setDrugs] = useState([]);
   const [donationForm, setDonationForm] = useState({
-    DonorId: uuid.v4(),
-    // DonorId: 1,
+    // DonorId: uuid.v4(),
+    DonorId: 1,
     DonorName: "",
     RecipientId: "",
     DrugName: "",
@@ -41,7 +41,6 @@ export const DonationProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    // Load donations from AsyncStorage when component mounts
     const loadDonations = async () => {
       try {
         const storedDonations = await AsyncStorage.getItem("donations");
@@ -59,7 +58,6 @@ export const DonationProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    // Save donations to AsyncStorage whenever the 'donations' state changes
     const saveDonations = async () => {
       try {
         await AsyncStorage.setItem("donations", JSON.stringify(donations));
@@ -70,10 +68,42 @@ export const DonationProvider = ({ children }) => {
     saveDonations();
   }, [donations]);
 
+  // useEffect(() => {
+  //   // Load donations from AsyncStorage when component mounts
+  //   const loadDonations = async () => {
+  //     try {
+  //       const storedDonations = await AsyncStorage.getItem("donations");
+  //       if (storedDonations) {
+  //         setDonations(JSON.parse(storedDonations));
+  //       }
+  //     } catch (error) {
+  //       console.error("Error loading donations from AsyncStorage:", error);
+  //     }
+  //   };
+  //   loadDonations();
+
+  //   fetchRecipients();
+  //   fetchDrugs();
+  // }, []);
+
+  // useEffect(() => {
+  //   // Save donations to AsyncStorage whenever the 'donations' state changes
+  //   const saveDonations = async () => {
+  //     try {
+  //       await AsyncStorage.setItem("donations", JSON.stringify(donations));
+  //     } catch (error) {
+  //       console.error("Error saving donations to AsyncStorage:", error);
+  //     }
+  //   };
+  //   saveDonations();
+  // }, [donations]);
+
   const fetchDonations = async () => {
     try {
-      // Fetch donations from the server
-      const response = await axios.get("http://1.1.1.250:9000/donation/all");
+      const response = await axios.get(
+        "http://85.112.70.8:3000/donation/all"
+        // "https://ea6b-85-112-70-8.ngrok-free.app/donation/all"
+      );
 
       const data = response.data.map((donation) => ({
         ...donation,
@@ -83,19 +113,15 @@ export const DonationProvider = ({ children }) => {
         ExpiryDate: new Date(donation.ExpiryDate).toLocaleDateString("en-GB"),
       }));
 
-      // Update state with fetched data
       setDonations(data);
     } catch (error) {
       console.error("Error fetching donations:", error);
 
-      // Handle server errors
       if (error.response && error.response.status >= 500) {
-        // Load data from AsyncStorage if server is unreachable
         const storedData = await AsyncStorage.getItem("donations");
         if (storedData) {
           setDonations(JSON.parse(storedData));
         }
-        // Display offline alert
         Alert.alert(
           "Offline",
           "Failed to load data. You are currently offline. Please check your internet connection.",
@@ -103,7 +129,6 @@ export const DonationProvider = ({ children }) => {
           { cancelable: false }
         );
       } else {
-        // Display generic error message for other errors
         Alert.alert(
           "Error",
           "Failed to fetch donations. Please try again later.",
@@ -114,9 +139,58 @@ export const DonationProvider = ({ children }) => {
     }
   };
 
+  // const fetchDonations = async () => {
+  //   try {
+  //     // Fetch donations from the server
+  //     const response = await axios.get(
+  //       "https://ea6b-85-112-70-8.ngrok-free.app/donation/all"
+  //     );
+
+  //     const data = response.data.map((donation) => ({
+  //       ...donation,
+  //       DonationDate: new Date(donation.DonationDate).toLocaleDateString(
+  //         "en-GB"
+  //       ),
+  //       ExpiryDate: new Date(donation.ExpiryDate).toLocaleDateString("en-GB"),
+  //     }));
+
+  //     // Update state with fetched data
+  //     setDonations(data);
+  //   } catch (error) {
+  //     console.error("Error fetching donations:", error);
+
+  //     // Handle server errors
+  //     if (error.response && error.response.status >= 500) {
+  //       // Load data from AsyncStorage if server is unreachable
+  //       const storedData = await AsyncStorage.getItem("donations");
+  //       if (storedData) {
+  //         setDonations(JSON.parse(storedData));
+  //       }
+  //       // Display offline alert
+  //       Alert.alert(
+  //         "Offline",
+  //         "Failed to load data. You are currently offline. Please check your internet connection.",
+  //         [{ text: "OK" }],
+  //         { cancelable: false }
+  //       );
+  //     } else {
+  //       // Display generic error message for other errors
+  //       Alert.alert(
+  //         "Error",
+  //         "Failed to fetch donations. Please try again later.",
+  //         [{ text: "OK" }],
+  //         { cancelable: false }
+  //       );
+  //     }
+  //   }
+  // };
+
   const fetchDrugs = async () => {
     try {
-      const response = await axios.get("http://1.1.1.250:9000/drugs/all");
+      const response = await axios.get(
+        "http://85.112.70.8:3000/drugs/all"
+        // "https://ea6b-85-112-70-8.ngrok-free.app/drugs/all"
+      );
       const drugsData = response.data;
       setDrugs(drugsData);
       // Assuming drugName is fetched from response data, modify the logic according to your data structure
@@ -135,48 +209,20 @@ export const DonationProvider = ({ children }) => {
 
   const fetchRecipients = async () => {
     try {
-      // Fetch recipients from the server
-      const response = await axios.get("http://1.1.1.250:9000/recipient/all");
-      const data = response.data;
-
-      // Extract recipients from _id
-      const recipients = data.map((recipient) => ({
-        _id: recipient._id,
-        RecipientName: recipient.RecipientName,
-        RecipientType: recipient.RecipientType,
-        Address: recipient.Address,
-        City: recipient.City,
-        Country: recipient.Country,
-        ContactPerson: recipient.ContactPerson,
-        ContactNumber: recipient.ContactNumber,
-        IsActive: recipient.IsActive,
-        CreatedDate: recipient.CreatedDate,
-        UpdatedDate: recipient.UpdatedDate,
-      }));
-
-      // Update state with extracted recipients
-      setRecipients(recipients);
+      const response = await axios.get("http://85.112.70.8:3000/recipient/all");
+      const recipientsData = response.data;
+      setRecipients(recipientsData);
+      // Assuming RecipientId is fetched from response data, modify the logic according to your data structure
+      // For example, you might set RecipientId to the first recipient's id
+      if (recipientsData.length > 0) {
+        setDonationForm((prevState) => ({
+          ...prevState,
+          RecipientId: recipientsData[0].id, // Modify this according to your data structure
+        }));
+      }
     } catch (error) {
       console.error("Error fetching recipients:", error);
-
-      // Handle server errors
-      if (error.response && error.response.status >= 500) {
-        // Display offline alert
-        Alert.alert(
-          "Offline",
-          "Failed to load data. You are currently offline. Please check your internet connection.",
-          [{ text: "OK" }],
-          { cancelable: false }
-        );
-      } else {
-        // Display generic error message for other errors
-        Alert.alert(
-          "Error",
-          "Failed to fetch recipients. Please try again later.",
-          [{ text: "OK" }],
-          { cancelable: false }
-        );
-      }
+      // Handle error
     }
   };
 
@@ -211,7 +257,8 @@ export const DonationProvider = ({ children }) => {
 
       // Make a POST request to add a new donation
       const response = await axios.post(
-        "http://1.1.1.250:9000/donation/add",
+        "http://85.112.70.8:3000/donation/add",
+        // "https://ea6b-85-112-70-8.ngrok-free.app/donation/add",
         donationForm,
         {
           headers: {
@@ -241,6 +288,85 @@ export const DonationProvider = ({ children }) => {
     }
   };
 
+  // Function to update a donation
+  const updateDonation = async (donationId, updatedDonation) => {
+    try {
+      updatedDonation.DonationDate = new Date(updatedDonation.DonationDate);
+      updatedDonation.ExpiryDate = new Date(updatedDonation.ExpiryDate);
+
+      const response = await axios.put(
+        // `https://ea6b-85-112-70-8.ngrok-free.app/donation/${donationId}`,
+        `http://85.112.70.8:3000/donation/${donationId}`,
+        updatedDonation,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Donation updated successfully");
+
+        // Update donations state with the edited donation
+        setDonations((prevDonations) =>
+          prevDonations.map((donation) =>
+            donation._id === donationId ? updatedDonation : donation
+          )
+        );
+      } else {
+        throw new Error("Failed to update donation");
+      }
+    } catch (error) {
+      console.error("Error updating donation:", error);
+
+      Alert.alert(
+        "Error",
+        error.message || "Failed to update donation. Please try again later.",
+        [{ text: "OK" }]
+      );
+    }
+  };
+
+  // // Function to update a donation
+  // const updateDonation = async (donationId, updatedDonation) => {
+  //   try {
+  //     // Convert date strings to Date objects
+  //     updatedDonation.DonationDate = new Date(updatedDonation.DonationDate);
+  //     updatedDonation.ExpiryDate = new Date(updatedDonation.ExpiryDate);
+
+  //     // Make a PUT request to update the donation
+  //     const response = await axios.put(
+  //       `https://ea6b-85-112-70-8.ngrok-free.app/donation/${donationId}`,
+  //       updatedDonation,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     // Check if the request was successful
+  //     if (response.status === 200) {
+  //       console.log("Donation updated successfully");
+
+  //       // Fetch updated donations
+  //       fetchDonations();
+  //     } else {
+  //       throw new Error("Failed to update donation");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating donation:", error);
+
+  //     // Display user-friendly error message
+  //     Alert.alert(
+  //       "Error",
+  //       error.message || "Failed to update donation. Please try again later.",
+  //       [{ text: "OK" }]
+  //     );
+  //   }
+  // };
+
   return (
     <DonationContext.Provider
       value={{
@@ -253,6 +379,7 @@ export const DonationProvider = ({ children }) => {
         donationForm,
         setDonationForm,
         addDonation,
+        updateDonation,
       }}
     >
       {children}
