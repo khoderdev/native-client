@@ -19,30 +19,33 @@ import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 
 const Donation = () => {
-  const { donations, fetchDonations } = useDonationContext();
+  const { donations, fetchDonations, recipients, drugs, fetchRecipients } = useDonationContext();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState(null);
-  const [storagePermissionGranted, setStoragePermissionGranted] =
-    useState(false);
-  const [donationsList, setDonationsList] = useState([]);
-
-
+  const [storagePermissionGranted, setStoragePermissionGranted] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log("Fetching donations...");
         await fetchDonations();
+        console.log("Fetched donations:", donations);
+
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching donations:", error);
+        console.error("Error fetching data:", error);
         setIsLoading(false);
       }
     };
 
     fetchData();
   }, []);
+  // Call fetchRecipients before rendering the FlatList
+  useEffect(() => {
+    fetchRecipients();
+  }, []);
+
 
   useEffect(() => {
     const checkStoragePermission = async () => {
@@ -68,55 +71,81 @@ const Donation = () => {
     setSelectedDonation(item);
   };
 
+  const getRecipientName = (recipientId) => {
+    const recipient = recipients.find(recipient => recipient.RecipientId === recipientId);
+    return recipient ? recipient.RecipientName : 'Unknown';
+  };
+
+  // const getRecipientName = (recipientId) => {
+  //   const recipient = recipients.find(recipient => recipient.RecipientId === recipientId);
+  //   return recipient ? recipient.RecipientName : 'Unknown';
+  // };
+
+  // const getRecipientName = (recipientId) => {
+  //   console.log("Recipient ID:", recipientId);
+  //   console.log("Recipients:", recipients);
+
+  //   const recipient = recipients.find(recipient => recipient.RecipientId === recipientId);
+  //   console.log("Recipient:", recipient);
+
+  //   return recipient ? recipient.RecipientName : 'Unknown';
+  // };
+  // const getRecipientName = (recipientId) => {
+  //   console.log("Recipient ID:", recipientId);
+  //   console.log("Recipients:", recipients);
+
+  //   const recipient = recipients.find(recipient => recipient.RecipientId === recipientId);
+  //   console.log("Recipient:", recipient);
+
+  //   return recipient ? recipient.RecipientName : 'Unknown';
+  // };
+  // const getRecipientName = (recipientId) => {
+  //   const recipient = recipients.find(recipient => recipient.RecipientId === recipientId);
+  //   return recipient ? recipient.RecipientName : 'Unknown';
+  // };
+
+
+
   const generateExcel = async () => {
     try {
-      // Handle permission request if not granted
       if (!storagePermissionGranted) {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         setStoragePermissionGranted(status === 'granted');
         if (!storagePermissionGranted) {
           Alert.alert(
             'Permission Required',
-            "Please grant permission to access your device's storage to export data."
+            "To export data, please grant permission to access your device's storage."
           );
           return;
         }
       }
 
-      // Check if sharing is available
       const sharingAvailable = await Sharing.isAvailableAsync();
       if (!sharingAvailable) {
         throw new Error('Sharing is not available on this device.');
       }
 
-      // Filter out unnecessary properties from donations
       const filteredDonations = donations.map(({ __v, ...rest }) => rest);
 
-      // Create a new Excel workbook
       const wb = XLSX.utils.book_new();
 
-      // Convert filtered donations data to a worksheet
       const ws = XLSX.utils.json_to_sheet(filteredDonations);
 
-      // Append the worksheet to the workbook with the name "Donations"
       XLSX.utils.book_append_sheet(wb, ws, 'Donations');
 
-      // Write workbook data to a base64 string
       const base64 = XLSX.write(wb, { type: 'base64' });
 
-      // Define filename for the Excel file
       const filename = 'Donations.xlsx';
 
-      // Save Excel file to device storage
       const filePath = `${FileSystem.documentDirectory}${filename}`;
       await FileSystem.writeAsStringAsync(filePath, base64, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Share Excel file with the user
+      console.log('Excel data written to file:', filePath);
+
       await Sharing.shareAsync(filePath);
 
-      // Display success message
       Alert.alert('Success', 'Excel file exported and saved to device storage.');
     } catch (error) {
       console.error('Error exporting data:', error);
@@ -128,22 +157,38 @@ const Donation = () => {
     return <Text>Loading...</Text>;
   }
 
-
   return (
     <View style={styles.mainContainer}>
       <FlatList
         data={donations}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleDonationPress(item)}>
-            <View style={styles.container}>
-              <Text style={styles.DrugName}>{item.DrugName}</Text>
-              <Text>Presentation: {item.Presentation}</Text>
-              <Text>Form: {item.Form}</Text>
-              <Text>Laboratory: {item.Laboratory}</Text>
-              <Text>Donation Date: {item.DonationDate}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          const recipientName = getRecipientName(item.RecipientId); // Get recipient name using recipient ID
+          const drugName = item.Drug ? item.Drug.DrugName : 'Unknown';
+
+          return (
+            <TouchableOpacity style={styles.container} onPress={() => handleDonationPress(item)}>
+              <View style={styles.innerContainer}>
+                {/* <Text style={styles.label}>Medicine Name:</Text> */}
+                <Text style={styles.drugText}>{drugName}</Text>
+              </View>
+              <View style={styles.innerContainer}>
+                <Text style={styles.label}>Presentation:</Text>
+                <Text style={styles.text}>{item.Presentation}</Text>
+              </View>
+              
+              <View style={styles.innerContainer}>
+                <Text style={styles.label}>Form:</Text>
+                <Text style={styles.text}>{item.Form}</Text>
+              </View>
+
+              <View style={styles.innerContainer}>
+                <Text style={styles.label}>Quantity:</Text>
+                <Text style={styles.text}>{item.Quantity}</Text>
+              </View>
+
+            </TouchableOpacity>
+          );
+        }}
         keyExtractor={(item, index) => index.toString()}
         refreshControl={
           <RefreshControl
@@ -170,25 +215,38 @@ const Donation = () => {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    padding: 10,
     paddingTop: 40,
+    backgroundColor: "#27272A",
+    paddingHorizontal: 10,
   },
   container: {
-    backgroundColor: colors.PRIMARY,
-    padding: 10,
+    backgroundColor: "#0096FF",
     borderRadius: 10,
     marginVertical: 10,
+    padding: 15,
   },
-  DrugName: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: colors.LIGHT,
+  innerContainer: {
+    flexDirection: 'row',
+    // justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  label: {
+    fontWeight: 'bold',
+    color: '#fff',
+    marginRight: 5
+  },
+  text: {
+    color: '#fff',
+  },
+  drugText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   exportButtonContainer: {
     position: "absolute",
     top: Platform.OS === "ios" ? 36 : 6,
     right: 12,
-    // marginBottom: 40,
   },
 });
 

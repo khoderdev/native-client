@@ -2,36 +2,32 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import uuid from "react-native-uuid";
 
 const DonationContext = createContext();
 
 export const useDonationContext = () => useContext(DonationContext);
 
-const clearAsyncStorage = async () => {
-  try {
-    await AsyncStorage.clear();
-    console.log("AsyncStorage cleared successfully.");
-  } catch (error) {
-    console.error("Error clearing AsyncStorage:", error);
-  }
-};
-
 export const DonationProvider = ({ children }) => {
   const [donations, setDonations] = useState([]);
+  const [donors, setDonors] = useState([]);
+  const [selectedDonorId, setSelectedDonorId] = useState("");
   const [recipients, setRecipients] = useState([]);
   const [drugs, setDrugs] = useState([]);
+  const [drugNames, setDrugNames] = useState([]);
+  const [selectedDrugName, setSelectedDrugName] = useState("");
   const [donationForm, setDonationForm] = useState({
-    // DonorId: uuid.v4(),
-    DonorId: 1,
+    DonorId: "",
+    DrugId: "",
     DonorName: "",
-    RecipientId: "",
+    DonorType: "Individual",
+    // RecipientId: "",
     DrugName: "",
     Quantity: "",
     Presentation: "",
     Form: "",
     DonationPurpose: "",
     DonationDate: new Date().toISOString(),
+    ProductionDate: "2024-03-31",
     Laboratory: "",
     LaboratoryCountry: "",
     LOT: "",
@@ -49,13 +45,38 @@ export const DonationProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Error loading donations from AsyncStorage:", error);
+        throw new Error("Failed to load donations from AsyncStorage");
       }
     };
     loadDonations();
 
     fetchRecipients();
     fetchDrugs();
+    fetchDrugNames();
+    fetchDonors();
   }, []);
+
+  const fetchDrugNames = async () => {
+    try {
+      const response = await axios.get("https://55bf-85-112-70-8.ngrok-free.app/drugs/all");
+      const drugsData = response.data;
+      const drugNames = drugsData.map((drug) => drug.DrugName);
+      setDrugNames(drugNames);
+      if (drugNames.length > 0) {
+        setDonationForm((prevState) => ({
+          ...prevState,
+          DrugName: drugNames[0], // Set the default value to the first drug name
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching drug names:", error);
+    }
+  };
+
+  const handleDrugNameChange = (drugName) => {
+    setSelectedDrugName(drugName);
+    setDonationForm({ ...donationForm, DrugName: drugName });
+  };
 
   useEffect(() => {
     const saveDonations = async () => {
@@ -63,48 +84,15 @@ export const DonationProvider = ({ children }) => {
         await AsyncStorage.setItem("donations", JSON.stringify(donations));
       } catch (error) {
         console.error("Error saving donations to AsyncStorage:", error);
+        throw new Error("Failed to save donations to AsyncStorage");
       }
     };
     saveDonations();
   }, [donations]);
 
-  // useEffect(() => {
-  //   // Load donations from AsyncStorage when component mounts
-  //   const loadDonations = async () => {
-  //     try {
-  //       const storedDonations = await AsyncStorage.getItem("donations");
-  //       if (storedDonations) {
-  //         setDonations(JSON.parse(storedDonations));
-  //       }
-  //     } catch (error) {
-  //       console.error("Error loading donations from AsyncStorage:", error);
-  //     }
-  //   };
-  //   loadDonations();
-
-  //   fetchRecipients();
-  //   fetchDrugs();
-  // }, []);
-
-  // useEffect(() => {
-  //   // Save donations to AsyncStorage whenever the 'donations' state changes
-  //   const saveDonations = async () => {
-  //     try {
-  //       await AsyncStorage.setItem("donations", JSON.stringify(donations));
-  //     } catch (error) {
-  //       console.error("Error saving donations to AsyncStorage:", error);
-  //     }
-  //   };
-  //   saveDonations();
-  // }, [donations]);
-
   const fetchDonations = async () => {
     try {
-      const response = await axios.get(
-        "http://85.112.70.8:3000/donation/all"
-        // "https://ea6b-85-112-70-8.ngrok-free.app/donation/all"
-      );
-
+      const response = await axios.get("https://55bf-85-112-70-8.ngrok-free.app/donation/all");
       const data = response.data.map((donation) => ({
         ...donation,
         DonationDate: new Date(donation.DonationDate).toLocaleDateString(
@@ -112,131 +100,70 @@ export const DonationProvider = ({ children }) => {
         ),
         ExpiryDate: new Date(donation.ExpiryDate).toLocaleDateString("en-GB"),
       }));
-
       setDonations(data);
     } catch (error) {
       console.error("Error fetching donations:", error);
+      handleFetchDonationsError(error);
+    }
+  };
 
+  const handleFetchDonationsError = async (error) => {
+    try {
       if (error.response && error.response.status >= 500) {
         const storedData = await AsyncStorage.getItem("donations");
         if (storedData) {
           setDonations(JSON.parse(storedData));
         }
-        Alert.alert(
+        showAlert(
           "Offline",
-          "Failed to load data. You are currently offline. Please check your internet connection.",
-          [{ text: "OK" }],
-          { cancelable: false }
+          "Failed to load data. You are currently offline. Please check your internet connection."
         );
       } else {
-        Alert.alert(
+        showAlert(
           "Error",
-          "Failed to fetch donations. Please try again later.",
-          [{ text: "OK" }],
-          { cancelable: false }
+          "Failed to fetch donations. Please try again later."
         );
       }
-    }
-  };
-
-  // const fetchDonations = async () => {
-  //   try {
-  //     // Fetch donations from the server
-  //     const response = await axios.get(
-  //       "https://ea6b-85-112-70-8.ngrok-free.app/donation/all"
-  //     );
-
-  //     const data = response.data.map((donation) => ({
-  //       ...donation,
-  //       DonationDate: new Date(donation.DonationDate).toLocaleDateString(
-  //         "en-GB"
-  //       ),
-  //       ExpiryDate: new Date(donation.ExpiryDate).toLocaleDateString("en-GB"),
-  //     }));
-
-  //     // Update state with fetched data
-  //     setDonations(data);
-  //   } catch (error) {
-  //     console.error("Error fetching donations:", error);
-
-  //     // Handle server errors
-  //     if (error.response && error.response.status >= 500) {
-  //       // Load data from AsyncStorage if server is unreachable
-  //       const storedData = await AsyncStorage.getItem("donations");
-  //       if (storedData) {
-  //         setDonations(JSON.parse(storedData));
-  //       }
-  //       // Display offline alert
-  //       Alert.alert(
-  //         "Offline",
-  //         "Failed to load data. You are currently offline. Please check your internet connection.",
-  //         [{ text: "OK" }],
-  //         { cancelable: false }
-  //       );
-  //     } else {
-  //       // Display generic error message for other errors
-  //       Alert.alert(
-  //         "Error",
-  //         "Failed to fetch donations. Please try again later.",
-  //         [{ text: "OK" }],
-  //         { cancelable: false }
-  //       );
-  //     }
-  //   }
-  // };
-
-  const fetchDrugs = async () => {
-    try {
-      const response = await axios.get(
-        "http://85.112.70.8:3000/drugs/all"
-        // "https://ea6b-85-112-70-8.ngrok-free.app/drugs/all"
+    } catch (err) {
+      console.error("Error handling fetch donations error:", err);
+      showAlert(
+        "Error",
+        "An unexpected error occurred while handling fetch donations error."
       );
-      const drugsData = response.data;
-      setDrugs(drugsData);
-      // Assuming drugName is fetched from response data, modify the logic according to your data structure
-      // For example, you might set RecipientId to the first drug's id
-      if (drugsData.length > 0) {
-        setDonationForm((prevState) => ({
-          ...prevState,
-          drugName: drugsData[0].id, // Modify this according to your data structure
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching drugs:", error);
-      // Handle error
     }
   };
 
-  const fetchRecipients = async () => {
+  const showAlert = (title, message) => {
+    Alert.alert(title, message, [{ text: "OK" }], { cancelable: false });
+  };
+
+  // Function to fetch donors and set state
+  const fetchDonors = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/recipient/all");
-      const recipientsData = response.data;
-      setRecipients(recipientsData);
-      // Assuming RecipientId is fetched from response data, modify the logic according to your data structure
-      // For example, you might set RecipientId to the first recipient's id
-      if (recipientsData.length > 0) {
+      const response = await axios.get("https://55bf-85-112-70-8.ngrok-free.app/donor/all");
+      const donorsData = response.data;
+      setDonors(donorsData); // Set donors state here
+      setSelectedDonorId(donorsData[0]?.DonorId || null); // Set the selected donor id
+      if (donorsData.length > 0) {
         setDonationForm((prevState) => ({
           ...prevState,
-          RecipientId: recipientsData[0].id, // Modify this according to your data structure
+          DonorId: donorsData[0]?.DonorId || "", // Set the DonorId in the donation form
+          DonorName: donorsData[0]?.DonorName || "", // Set the DonorName in the donation form
         }));
       }
     } catch (error) {
-      console.error("Error fetching recipients:", error);
-      // Handle error
+      console.error("Error fetching donors:", error);
+      showAlert("Error", "Failed to fetch donors. Please try again later.");
     }
   };
-
-  // clear existing data from AsyncStorage
-  // clearAsyncStorage();
 
   const addDonation = async () => {
     try {
-      // Check if all required fields are present in donationForm
       const requiredFields = [
-        "RecipientId",
+        "DrugName",
+        // "RecipientId",
         "Presentation",
         "Form",
-        "RecipientId",
         "DonationDate",
         "ExpiryDate",
         "Quantity",
@@ -255,11 +182,24 @@ export const DonationProvider = ({ children }) => {
         );
       }
 
-      // Make a POST request to add a new donation
+      // Get the selected drug object
+      const selectedDrug = drugs.find(
+        (drug) => drug.DrugName === selectedDrugName
+      );
+
+      if (!selectedDrug) {
+        throw new Error("Selected drug not found");
+      }
+
+      const data = {
+        ...donationForm,
+        DonorId: selectedDonorId, // Set DonorId based on selected donor
+        DrugId: selectedDrug._id, // Set DrugId based on selected drug
+      };
+
       const response = await axios.post(
-        "http://85.112.70.8:3000/donation/add",
-        // "https://ea6b-85-112-70-8.ngrok-free.app/donation/add",
-        donationForm,
+        "https://55bf-85-112-70-8.ngrok-free.app/donation/add",
+        data,
         {
           headers: {
             "Content-Type": "application/json",
@@ -267,119 +207,138 @@ export const DonationProvider = ({ children }) => {
         }
       );
 
-      // Check if the request was successful
       if (response.status === 201) {
         console.log("Donation added successfully");
-
-        // Fetch updated donations
         fetchDonations();
       } else {
-        throw new Error("Failed to add donation");
+        // throw new Error("Failed to add donation");
       }
     } catch (error) {
       console.error("Error adding donation:", error);
-
-      // Display user-friendly error message
-      Alert.alert(
+      showAlert(
         "Error",
-        error.message || "Failed to add donation. Please try again later.",
-        [{ text: "OK" }]
+        error.message || "Failed to add donation. Please try again later."
       );
     }
   };
 
-  // Function to update a donation
-  const updateDonation = async (donationId, updatedDonation) => {
+  const fetchDrugs = async () => {
     try {
-      updatedDonation.DonationDate = new Date(updatedDonation.DonationDate);
-      updatedDonation.ExpiryDate = new Date(updatedDonation.ExpiryDate);
-
-      const response = await axios.put(
-        // `https://ea6b-85-112-70-8.ngrok-free.app/donation/${donationId}`,
-        `http://85.112.70.8:3000/donation/${donationId}`,
-        updatedDonation,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        console.log("Donation updated successfully");
-
-        // Update donations state with the edited donation
-        setDonations((prevDonations) =>
-          prevDonations.map((donation) =>
-            donation._id === donationId ? updatedDonation : donation
-          )
-        );
-      } else {
-        throw new Error("Failed to update donation");
+      const response = await axios.get("https://55bf-85-112-70-8.ngrok-free.app/drugs/all");
+      const drugsData = response.data;
+      // console.log("Drugs Data:", drugsData); // Log drugs data
+      setDrugs(drugsData);
+      if (drugsData.length > 0) {
+        setDonationForm((prevState) => ({
+          ...prevState,
+          DrugName: drugsData[0].DrugID,
+        }));
       }
     } catch (error) {
-      console.error("Error updating donation:", error);
-
-      Alert.alert(
-        "Error",
-        error.message || "Failed to update donation. Please try again later.",
-        [{ text: "OK" }]
-      );
+      console.error("Error fetching drugs:", error);
+      showAlert("Error", "Failed to fetch drugs.");
     }
   };
 
-  // // Function to update a donation
-  // const updateDonation = async (donationId, updatedDonation) => {
+  // const fetchRecipients = async () => {
   //   try {
-  //     // Convert date strings to Date objects
-  //     updatedDonation.DonationDate = new Date(updatedDonation.DonationDate);
-  //     updatedDonation.ExpiryDate = new Date(updatedDonation.ExpiryDate);
+  //     const response = await axios.get("https://55bf-85-112-70-8.ngrok-free.app/recipient/all");
+  //     const recipientsData = response.data;
 
-  //     // Make a PUT request to update the donation
-  //     const response = await axios.put(
-  //       `https://ea6b-85-112-70-8.ngrok-free.app/donation/${donationId}`,
-  //       updatedDonation,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
+  //     // Map the response data to include only necessary fields (RecipientId and RecipientName)
+  //     const mappedRecipients = recipientsData.map((recipient) => ({
+  //       RecipientId: recipient.RecipientId,
+  //       RecipientName: recipient.RecipientName,
+  //     }));
 
-  //     // Check if the request was successful
-  //     if (response.status === 200) {
-  //       console.log("Donation updated successfully");
+  //     setRecipients(mappedRecipients);
 
-  //       // Fetch updated donations
-  //       fetchDonations();
-  //     } else {
-  //       throw new Error("Failed to update donation");
+  //     if (mappedRecipients.length > 0) {
+  //       // Assuming you want to set the first recipient as the default in the donation form
+  //       setDonationForm((prevState) => ({
+  //         ...prevState,
+  //         RecipientId: mappedRecipients[0].RecipientId,
+  //         RecipientName: mappedRecipients[0].RecipientName, // You may also set the RecipientName if needed
+  //       }));
   //     }
   //   } catch (error) {
-  //     console.error("Error updating donation:", error);
-
-  //     // Display user-friendly error message
-  //     Alert.alert(
-  //       "Error",
-  //       error.message || "Failed to update donation. Please try again later.",
-  //       [{ text: "OK" }]
-  //     );
+  //     console.error("Error fetching recipients:", error);
+  //     showAlert("Error", "Failed to fetch recipients.");
   //   }
   // };
+
+  const fetchRecipients = async () => {
+    try {
+      const response = await axios.get("https://55bf-85-112-70-8.ngrok-free.app/recipient/all");
+      const recipientsData = response.data;
+      const mappedRecipients = recipientsData.map((recipient) => ({
+        RecipientId: recipient.RecipientId,
+        RecipientName: recipient.RecipientName,
+      }));
+
+      setRecipients(mappedRecipients);
+
+      if (mappedRecipients.length > 0) {
+        setDonationForm((prevState) => ({
+          ...prevState,
+          RecipientId: mappedRecipients[0].RecipientId,
+          RecipientName: mappedRecipients[0].RecipientName,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching recipients:", error);
+      showAlert("Error", "Failed to fetch recipients.");
+    }
+  };
+
+  const updateDonation = async (donationId, updatedData) => {
+    try {
+      const response = await fetch(`/donation/${donationId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update donation");
+      }
+
+      const responseData = await response.json();
+      console.log("Donation updated successfully:", responseData);
+      return responseData;
+    } catch (error) {
+      console.error("Error updating donation:", error);
+      throw error;
+    }
+  };
 
   return (
     <DonationContext.Provider
       value={{
         donations,
+        fetchDrugs,
         drugs,
+        donors,
+        drugNames,
+        setDrugNames,
+        selectedDrugName,
+        setSelectedDrugName,
+        fetchDrugNames,
+        handleDrugNameChange,
         recipients,
         setRecipients,
+        fetchDonors,
         fetchDonations,
+        selectedDonorId,
+        setSelectedDonorId,
         fetchRecipients,
         donationForm,
         setDonationForm,
         addDonation,
         updateDonation,
+        setDonations,
       }}
     >
       {children}

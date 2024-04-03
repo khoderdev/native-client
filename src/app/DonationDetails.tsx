@@ -1,17 +1,17 @@
-
 import React, { useState, useEffect } from "react";
-import {Alert, View, Text, StyleSheet, Modal, Pressable, ScrollView, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet, Modal, Pressable, ScrollView, TextInput, Button } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import colors from "../misc/colors";
 import { useDonationContext } from "./contexts/DonationContext";
+import axios from "axios";
 
 interface DonationDetailsProps {
     donation: {
-        _id: string;
+        DonationId: number;
         DonorName: string;
-        RecipientId: string;
+        RecipientId: number;
         DrugName: string;
-        Quantity: string;
+        Quantity: number;
         Presentation: string;
         Form: string;
         DonationPurpose: string;
@@ -27,9 +27,25 @@ interface DonationDetailsProps {
 }
 
 const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) => {
-    const { donationForm, setDonationForm, recipients, updateDonation } = useDonationContext();
+    const { donationForm, setDonationForm, recipients } = useDonationContext();
     const [editMode, setEditMode] = useState(false);
     const [recipientName, setRecipientName] = useState("");
+
+    const updateDonation = async (DonationId, updatedData) => {
+        try {
+            // Make a PUT request to the server API endpoint with the updated donation data
+            const response = await axios.put(
+                `http://1.1.1.250:3000/donation/${DonationId}`,
+                updatedData
+            );
+
+            // Return the updated donation from the server response
+            return response.data;
+        } catch (error) {
+            console.error("Error updating donation:", error.message);
+            throw error;
+        }
+    };
 
     // Set initial values when donation prop changes
     useEffect(() => {
@@ -42,38 +58,31 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
         }
     }, [donation, recipients]);
 
-    // const handleSave = async () => {
-    //     try {
-    //         // Update the donation using the updateDonation function
-    //         await updateDonation(donation._id, donationForm);
-
-    //         onClose(); // Close the modal after saving
-    //     } catch (error) {
-    //         console.error("Error updating donation:", error);
-    //         Alert.alert(
-    //             "Error",
-    //             error.message || "Failed to update donation. Please try again later.",
-    //             [{ text: "OK" }]
-    //         );
-    //     }
-    // };
-
-    const handleSave = () => {
-        // Update the context state with edited data
-        // Note: You can perform validation before updating the state
-        setDonationForm(donationForm);
-        setEditMode(false);
-        onClose(); // Close the modal after saving
+    const handleSave = async () => {
+        try {
+            await updateDonation(donation.DonationId, donationForm); // Assuming donationForm contains updated data
+            setEditMode(false);
+            onClose();
+        } catch (error) {
+            // Handle error if needed
+            console.error("Error updating donation:", error.message);
+        }
     };
 
-    // Filter out _id and __v keys
+    // Filter out ID fields, dates, and improve styles
     const filteredDonationForm = Object.fromEntries(
-        Object.entries(donationForm).filter(([key]) => key !== "_id" && key !== "__v")
+        Object.entries(donationForm).filter(
+            ([key, value]) =>
+                !['_id', 'DonationId', 'RecipientId', 'DrugID', 'ManufacturerID', 'DonationDate'].includes(key) &&
+                typeof value !== 'object' // Excludes date objects
+        )
     );
+
+    // Format the expiration date as YYYY-MM-DD
+    const formattedExpDate = donation.ExpiryDate ? `20${donation.ExpiryDate.slice(0, 2)}-${donation.ExpiryDate.slice(2, 4)}-${donation.ExpiryDate.slice(4)}` : '';
 
     const labelMapping = {
         DonorName: "Donor Name",
-        RecipientId: "Recipient",
         DrugName: "Drug Name",
         Quantity: "Quantity",
         Presentation: "Presentation",
@@ -103,42 +112,42 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                             <Ionicons name="close" size={24} color={colors.LIGHT} />
                         </Pressable>
                     </View>
+
                     <ScrollView contentContainerStyle={styles.scrollView}>
                         {Object.entries(filteredDonationForm).map(([key, value]) => (
                             <View key={key} style={styles.detailItem}>
                                 <Text style={styles.label}>{labelMapping[key]}:</Text>
-                                {key === "RecipientId" ? (
-                                    <Text style={styles.value}>{recipientName}</Text>
-                                ) : key === "DonationDate" || key === "ExpiryDate" ? (
-                                    // Display the date value as text without editability
+                                {!editMode ? (
+                                    // For non-date fields, display editable text input in edit mode
                                     <Text style={styles.value}>{value}</Text>
                                 ) : (
-                                    !editMode ? (
-                                        // For other fields, display editable text input in edit mode
-                                        <Text style={styles.value}>{value}</Text>
-                                    ) : (
-                                        <TextInput
-                                            style={styles.input}
-                                            value={value !== null ? value.toString() : ''}
-                                            onChangeText={(text) =>
-                                                setDonationForm((prevData) => ({
-                                                    ...prevData,
-                                                    [key]: text,
-                                                }))
-                                            }
-                                        />
-                                    )
+                                    <TextInput
+                                        style={styles.input}
+                                        value={value !== null ? value.toString() : ""}
+                                        onChangeText={(text) =>
+                                            setDonationForm((prevData) => ({
+                                                ...prevData,
+                                                [key]: text,
+                                            }))
+                                        }
+                                        editable={!['_id', 'DonationId', 'RecipientId', 'DrugID', 'ManufacturerID'].includes(key)}
+                                    />
                                 )}
                             </View>
                         ))}
-
                     </ScrollView>
-
-                    {/* Conditionally render "Edit" or "Update" button based on editMode */}
                     {!editMode ? (
                         <Button title="Edit" onPress={() => setEditMode(true)} />
                     ) : (
-                        <Button title="Update" onPress={handleSave} />
+                        <View style={styles.buttonsContainer}>
+
+                            <Button title="Cancel" onPress={() => {
+                                setDonationForm(donation); // Revert changes by resetting the form to original data
+                                setEditMode(false); // Exit edit mode
+                            }}
+                            />
+                            <Button title="Update" onPress={handleSave} />
+                        </View>
                     )}
                 </View>
             </Pressable>
@@ -151,7 +160,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        backgroundColor: "#27272A",
+        // backgroundColor: "rgba(0, 0, 0, 0.6)",
     },
     modalContent: {
         backgroundColor: colors.DARK,
@@ -194,17 +204,17 @@ const styles = StyleSheet.create({
         padding: 10,
         color: colors.LIGHT,
     },
-    editButtonContainer: {
-        position: 'absolute',
-        bottom: 20,
-        alignSelf: 'center',
-        width: '90%'
-    },
     closeIconContainer: {
         position: "absolute",
         top: 10,
         right: 10,
     },
+    buttonsContainer: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginTop: 10,
+    },
+
 });
 
 export default DonationDetails;
