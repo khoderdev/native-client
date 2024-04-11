@@ -61,9 +61,15 @@ const Donation = () => {
     setRefreshing(false);
   };
 
-  const handleDonationPress = (item) => {
-    setSelectedDonation(item);
-  };
+ const handleDonationPress = async (item) => {
+  try {
+    const response = await fetch(`http://85.112.70.8:3000/donations/${item.id}`);
+    const donationDetails = await response.json();
+    setSelectedDonation(donationDetails);
+  } catch (error) {
+    console.error("Error fetching donation details:", error);
+  }
+};
 
   const generateExcel = async () => {
     try {
