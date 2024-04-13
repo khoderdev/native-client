@@ -566,7 +566,7 @@ export default function Donate() {
                     placeholder="Lot#"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>
@@ -581,7 +581,7 @@ export default function Donate() {
                     placeholder="Exp"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>
@@ -596,7 +596,7 @@ export default function Donate() {
                     placeholder="Gtin"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>
@@ -611,7 +611,7 @@ export default function Donate() {
                     placeholder="Serial"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>

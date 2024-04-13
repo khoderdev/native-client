@@ -85,14 +85,25 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
     };
 
     // Filter out ID fields, dates, and improve styles
-    const filteredDonationForm = Object.fromEntries(
-        Object.entries(donationForm).filter(
-            ([key, value]) =>
-                !['_id', 'DonationId', 'RecipientId', 'DrugID', 'ManufacturerID', 'DonationDate'].includes(key) &&
-                typeof value !== 'object' // Excludes date objects
-        )
-    );
+    // const filteredDonationForm = Object.fromEntries(
+    //     Object.entries(donationForm).filter(
+    //         ([key, value]) =>
+    //             !['_id', 'DonationId', 'RecipientId', 'DrugID', 'ManufacturerID', 'DonationDate'].includes(key) &&
+    //             typeof value !== 'object' // Excludes date objects
+    //     )
+    // );
 
+
+    const editableFields = ['Quantity', 'Presentation', 'Form', 'DonationPurpose', 'Laboratory', 'LaboratoryCountry', 'LOT', 'GTIN', 'Serial'];
+
+    // // Filter out fields based on editableFields array
+    // const filteredDonationForm = Object.fromEntries(
+    //     Object.entries(donationForm).filter(([key, value]) => editableFields.includes(key))
+    // );
+
+    const filteredDonationForm = Object.fromEntries(
+        editableFields.map((key) => [key, donationForm[key] || ""]) // Add missing keys with empty values
+    );
     // Format the expiration date as YYYY-MM-DD
     const formattedExpDate = donation.ExpiryDate ? `20${donation.ExpiryDate.slice(0, 2)}-${donation.ExpiryDate.slice(2, 4)}-${donation.ExpiryDate.slice(4)}` : '';
 
@@ -133,7 +144,6 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                             <View key={key} style={styles.detailItem}>
                                 <Text style={styles.label}>{labelMapping[key]}:</Text>
                                 {!editMode ? (
-
                                     <Text style={styles.value}>{value}</Text>
                                 ) : (
                                     <TextInput
@@ -145,7 +155,7 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                                                 [key]: text,
                                             }))
                                         }
-                                        editable={!['_id', 'DonationId', 'RecipientId', 'DrugID', 'ManufacturerID'].includes(key)}
+                                        editable={editableFields.includes(key)} // Allow editing only for fields in editableFields array
                                     />
                                 )}
                             </View>
