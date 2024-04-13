@@ -17,23 +17,26 @@ import * as XLSX from "xlsx";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const Donation = () => {
-  const { donations, fetchDonations } = useDonationContext();
+  const { donations, fetchDonations, recipients, drugs, fetchRecipients, donors } = useDonationContext();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState(null);
-  const [storagePermissionGranted, setStoragePermissionGranted] =
-    useState(false);
+  const [storagePermissionGranted, setStoragePermissionGranted] = useState(false);
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log("Fetching donations...");
         await fetchDonations();
+        console.log("Fetched donations:", donations);
+
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching donations:", error);
+        console.error("Error fetching data:", error);
         setIsLoading(false);
       }
     };
@@ -42,12 +45,16 @@ const Donation = () => {
   }, []);
 
   useEffect(() => {
+    fetchRecipients();
+  }, []);
+
+  useEffect(() => {
     const checkStoragePermission = async () => {
       try {
-        const { status } = await MediaLibrary.requestPermissionsAsync(); // Request storage permission using expo-media-library
-        setStoragePermissionGranted(status === "granted");
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        setStoragePermissionGranted(status === 'granted');
       } catch (error) {
-        console.error("Error requesting storage permission:", error);
+        console.error('Error requesting storage permission:', error);
         setStoragePermissionGranted(false);
       }
     };
@@ -61,70 +68,71 @@ const Donation = () => {
     setRefreshing(false);
   };
 
-  const handleDonationPress = (item) => {
-    setSelectedDonation(item);
+  const handleDonationPress = async (donation) => {
+    const donationId = donation.DonationId;
+    try {
+      const response = await fetch(`http://85.112.70.8:3000/donation/${donationId}`);
+      const donationDetails = await response.json();
+      setSelectedDonation(donationDetails);
+    } catch (error) {
+      console.error("Error fetching donation details:", error);
+      throw error;
+    }
   };
+
+  const getRecipientName = (recipientId) => {
+    const recipient = recipients.find(recipient => recipient.RecipientId === recipientId);
+    return recipient ? recipient.RecipientName : 'Unknown';
+  };
+  const getDonorName = (donorId) => {
+    const donor = donors.find(donor => donor.DonorId === donorId);
+    return donor ? donor.DonorName : 'Unknown';
+  }
 
   const generateExcel = async () => {
     try {
       if (!storagePermissionGranted) {
-        // Ask for storage permission
-        await MediaLibrary.requestPermissionsAsync(); // Request storage permission using expo-media-library
-        const { status } = await MediaLibrary.getPermissionsAsync(); // Check if permission granted
-        setStoragePermissionGranted(status === "granted");
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        setStoragePermissionGranted(status === 'granted');
         if (!storagePermissionGranted) {
-          // Permission not granted
           Alert.alert(
-            "Permission Required",
+            'Permission Required',
             "To export data, please grant permission to access your device's storage."
           );
           return;
         }
       }
 
-      // Check if sharing is available
       const sharingAvailable = await Sharing.isAvailableAsync();
       if (!sharingAvailable) {
-        throw new Error("Sharing is not available on this device.");
+        throw new Error('Sharing is not available on this device.');
       }
 
-      // Filtering out the "__v" property from each donation object
       const filteredDonations = donations.map(({ __v, ...rest }) => rest);
 
-      // Creating a new Excel workbook
-      let wb = XLSX.utils.book_new();
+      const wb = XLSX.utils.book_new();
 
-      // Converting the filtered donations data to a worksheet
-      let ws = XLSX.utils.json_to_sheet(filteredDonations);
+      const ws = XLSX.utils.json_to_sheet(filteredDonations);
 
-      // Appending the worksheet to the workbook with the name "Donations"
-      XLSX.utils.book_append_sheet(wb, ws, "Donations");
+      XLSX.utils.book_append_sheet(wb, ws, 'Donations');
 
-      // Writing the workbook data to a base64 string
-      const base64 = XLSX.write(wb, { type: "base64" });
+      const base64 = XLSX.write(wb, { type: 'base64' });
 
-      // Defining the filename for the Excel file
-      const filename = "Donations.xlsx";
+      const filename = 'Donations.xlsx';
 
-      // Save the Excel file to device storage
       const filePath = `${FileSystem.documentDirectory}${filename}`;
       await FileSystem.writeAsStringAsync(filePath, base64, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      console.log("Excel data written to file:", filePath);
+      console.log('Excel data written to file:', filePath);
 
-      // Share the Excel file with the user
       await Sharing.shareAsync(filePath);
 
-      // Display a success message
-      Alert.alert(
-        "Success",
-        "Excel file exported and saved to device storage."
-      );
+      Alert.alert('Success', 'Excel file exported and saved to device storage.');
     } catch (error) {
-      console.error("Error exporting data:", error);
-      Alert.alert("Export Failed", "Failed to export data. Please try again.");
+      console.error('Error exporting data:', error);
+      Alert.alert('Export Failed', 'Failed to export data. Please try again.');
     }
   };
 
@@ -136,16 +144,32 @@ const Donation = () => {
     <View style={styles.mainContainer}>
       <FlatList
         data={donations}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleDonationPress(item)}>
-            <View style={styles.container}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text>Presentation: {item.presentation}</Text>
-              <Text>Form: {item.form}</Text>
-              <Text>Laboratory: {item.laboratory}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          const recipientName = getRecipientName(item.RecipientId); // Get recipient name using recipient ID
+          const DonorName = getDonorName(item.DonorId);
+          const drugName = item.BatchLotTrackings.map(batchLot => batchLot.DrugName).join(', '); // Get donor name using donor ID
+
+
+
+          return (
+            <TouchableOpacity style={styles.container} onPress={() => handleDonationPress(item)}>
+              <View style={styles.innerContainer}>
+                <Text style={styles.drugText}>{drugName}</Text>
+              </View>
+
+              <View style={styles.innerContainer}>
+                <Text style={styles.label}>Donor:</Text>
+                <Text style={styles.text}>{DonorName}</Text>
+              </View>
+              
+              <View style={styles.innerContainer}>
+                <Text style={styles.label}>Recipient:</Text>
+                <Text style={styles.text}>{recipientName}</Text>
+              </View>
+              
+            </TouchableOpacity>
+          );
+        }}
         keyExtractor={(item, index) => index.toString()}
         refreshControl={
           <RefreshControl
@@ -155,6 +179,7 @@ const Donation = () => {
           />
         }
       />
+
       {selectedDonation && (
         <DonationDetails
           donation={selectedDonation}
@@ -171,25 +196,37 @@ const Donation = () => {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    padding: 10,
     paddingTop: 40,
+    backgroundColor: "#27272A",
+    paddingHorizontal: 10,
   },
   container: {
-    backgroundColor: colors.PRIMARY,
-    padding: 10,
+    backgroundColor: "#0096FF",
     borderRadius: 10,
     marginVertical: 10,
+    padding: 15,
   },
-  name: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: colors.LIGHT,
+  innerContainer: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  label: {
+    fontWeight: 'bold',
+    color: '#fff',
+    marginRight: 5
+  },
+  text: {
+    color: '#fff',
+  },
+  drugText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   exportButtonContainer: {
     position: "absolute",
     top: Platform.OS === "ios" ? 36 : 6,
     right: 12,
-    // marginBottom: 40,
   },
 });
 

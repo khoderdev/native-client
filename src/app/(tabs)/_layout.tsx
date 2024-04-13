@@ -24,7 +24,7 @@ export default function TabLayout() {
 
   return (
     <>
-      <View className='h-full bg-red-500'>
+      <View className='h-full'>
         <Tabs
           screenOptions={{
             tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,

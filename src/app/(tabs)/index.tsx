@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet, Pressable, View, Text } from "react-native";
+
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link } from "expo-router";
 import { DonationProvider } from "../contexts/DonationContext";
@@ -16,7 +17,7 @@ export default function TabOneScreen() {
     <DonationProvider>
       <View className="bg-zinc-800" style={styles.container}>
         <HomeSwiper />
-        <Text style={styles.title}>Med Donation</Text>
+        <Text style={styles.title}>MedLeb Donation</Text>
         <Link
           suppressHighlighting
           className="flex h-13 w-36 mt-10 items-center justify-center overflow-hidden rounded-md bg-[#0096FF] px-4 pt-5 py-4 text-sm font-medium text-white web:shadow ios:shadow transition-colors hover:bg-gray-900/90 active:bg-gray-400/90 web:focus-visible:outline-none web:focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
@@ -32,6 +33,7 @@ export default function TabOneScreen() {
             />
           </View>
         </Link>
+
       </View>
     </DonationProvider>
   );

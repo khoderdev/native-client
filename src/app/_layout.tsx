@@ -8,8 +8,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import AppManifest from 'expo-constants';
 import { useColorScheme } from '../components/useColorScheme';
-import { DonationProvider } from './contexts/DonationContext';
+import  {DonationProvider}  from './contexts/DonationContext';
 import '../global.css'
+import { Provider as PaperProvider } from 'react-native-paper';
+// import { AutocompleteDropdownContextProvider } from 'react-native-autocomplete-dropdown';
 
 
 export {
@@ -48,9 +50,14 @@ export default function RootLayout() {
 
   return (
     // Wrap RootLayoutNav with DonationProvider
-    <DonationProvider>
-      <RootLayoutNav />
-    </DonationProvider>
+    <PaperProvider>
+      {/* <AutocompleteDropdownContextProvider> */}
+        <DonationProvider>
+          <RootLayoutNav />
+        </DonationProvider>
+      {/* </AutocompleteDropdownContextProvider> */}
+    </PaperProvider>
+
   );
 }
 
