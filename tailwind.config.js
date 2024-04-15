@@ -2,21 +2,9 @@
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
-  
+
   darkMode: "class",
   theme: {
-    variant: {
-      xsss: "266px",
-      xss: "320px",
-      xs: "366px",
-      ss: "375px",
-      sn: "480px",
-      sm: "640px",
-      md: "768px",
-      lg: "1024px",
-      xl: "1280px",
-      "2xl": "1536px",
-    },
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

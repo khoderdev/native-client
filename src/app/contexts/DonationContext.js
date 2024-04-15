@@ -70,7 +70,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchDrugNames = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/drugs/all");
+      const response = await axios.get("http://1.1.1.250:3000/drugs/all");
       const drugsData = response.data;
       const drugNames = drugsData.map((drug) => drug.DrugName);
 
@@ -146,7 +146,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchDonations = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/donation/all");
+      const response = await axios.get("http://1.1.1.250:3000/donation/all");
       const data = response.data.map((donation) => ({
         ...donation,
         DonationDate: new Date(donation.DonationDate).toLocaleDateString(
@@ -186,7 +186,7 @@ export const DonationProvider = ({ children }) => {
   // Function to fetch donors and set state
   const fetchDonors = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/donor/all");
+      const response = await axios.get("http://1.1.1.250:3000/donor/all");
       const donorsData = response.data;
 
       // Set donors state here
@@ -252,7 +252,7 @@ export const DonationProvider = ({ children }) => {
 
       // Send POST request to add donation
       const response = await axios.post(
-        "http://85.112.70.8:3000/donation/add",
+        "http://1.1.1.250:3000/donation/add",
         data,
         {
           headers: {
@@ -283,7 +283,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchDrugs = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/drugs/all");
+      const response = await axios.get("http://1.1.1.250:3000/drugs/all");
       const drugsData = response.data;
 
       // Set drugs data in the state
@@ -307,7 +307,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchRecipients = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/recipient/all");
+      const response = await axios.get("http://1.1.1.250:3000/recipient/all");
       const recipientsData = response.data;
 
       // Map the recipients data to extract relevant information

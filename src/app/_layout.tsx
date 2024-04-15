@@ -66,6 +66,7 @@ function RootLayoutNav() {
         options={{
           headerShown: false,
           title: appName,
+
         }}
       />
       {/* <Stack.Screen name="modal" options={{ presentation: 'modal' }} /> */}

@@ -35,7 +35,7 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
         try {
             // Make a PUT request to the server API endpoint with the updated donation data
             const response = await axios.put(
-                `http://85.112.70.8:3000/donation/${DonationId}`,
+                `http://1.1.1.250:3000/donation/${DonationId}`,
                 updatedData
             );
 
@@ -185,11 +185,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#27272A",
-        // backgroundColor: "rgba(0, 0, 0, 0.6)",
+
+        backgroundColor: "#fff",
     },
     modalContent: {
-        backgroundColor: colors.DARK,
+        backgroundColor: "#fff",
         padding: 20,
         borderRadius: 10,
         width: "100%",
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         fontWeight: "bold",
-        color: colors.PRIMARY,
+        color: "121212",
     },
     scrollView: {
         flexGrow: 1,
@@ -215,19 +215,19 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 16,
         marginBottom: 5,
-        color: colors.GRAY,
+        color: "121212",
     },
     value: {
         fontSize: 16,
-        color: colors.LIGHT,
+        color: "121212",
     },
     input: {
         height: 40,
+        color: "#000",
         borderWidth: 1,
-        borderColor: colors.GRAY,
-        borderRadius: 5,
-        padding: 10,
-        color: colors.LIGHT,
+        borderRadius: 20,
+        borderColor: "#00a651",
+        padding: 15,
     },
     closeIconContainer: {
         position: "absolute",
