@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "med-donation",
+    "name": "MedLeb Donations",
     "slug": "med-donation",
     "scheme": "med-donation",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "orientation": "default",
     "web": {
       "output": "static",
@@ -47,9 +47,9 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {
-        "origin": "https://n"
-      },
+      // "router": {
+      //   "origin": "https://n"
+      // },
       "eas": {
         "projectId": "1e85122e-f12c-403d-b6c4-ea6b9b5ad7db"
       }

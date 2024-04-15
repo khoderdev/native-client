@@ -10,13 +10,14 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import colors from "../../misc/colors";
-import { useDonationContext } from "../contexts/DonationContext";
-import DonationDetails from "../DonationDetails";
+import colors from "../misc/colors";
+import { DonationProvider } from "../app/contexts/DonationContext";
+import DonationDetails from "../app/DonationDetails";
 import * as XLSX from "xlsx";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const Donation = () => {
   const { donations, fetchDonations, recipients, drugs, fetchRecipients, donors } = useDonationContext();
@@ -144,9 +145,9 @@ const Donation = () => {
       <FlatList
         data={donations}
         renderItem={({ item }) => {
-          const recipientName = getRecipientName(item.RecipientId);
+          const recipientName = getRecipientName(item.RecipientId); // Get recipient name using recipient ID
           const DonorName = getDonorName(item.DonorId);
-          const drugName = item.BatchLotTrackings.map(batchLot => batchLot.DrugName).join(', ');
+          const drugName = item.BatchLotTrackings.map(batchLot => batchLot.DrugName).join(', '); // Get donor name using donor ID
 
 
 
@@ -160,12 +161,12 @@ const Donation = () => {
                 <Text style={styles.label}>Donor:</Text>
                 <Text style={styles.text}>{DonorName}</Text>
               </View>
-
+              
               <View style={styles.innerContainer}>
                 <Text style={styles.label}>Recipient:</Text>
                 <Text style={styles.text}>{recipientName}</Text>
               </View>
-
+              
             </TouchableOpacity>
           );
         }}

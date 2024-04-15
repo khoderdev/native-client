@@ -16,12 +16,12 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker'
-import { useDonationContext } from "./contexts/DonationContext";
+import { useDonationContext } from "../app/contexts/DonationContext";
 import { Camera } from "expo-camera";
 import { TouchableOpacity } from "react-native";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Keyboard } from "react-native";
-
+import axios from "axios";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -49,7 +49,8 @@ const ErrorMessage = ({
   ) : null;
 
 export default function Donate() {
-  const { donationForm, setDonationForm, addDonation, recipients, donors } = useDonationContext();
+  const { donationForm, setDonationForm, addDonation, recipients, selectedDonorId,
+    setSelectedDonorId, drugNames, donors, fetchDonors, fetchRecipients, fetchDrugs, selectedDrugName, handleDrugNameChange, } = useDonationContext();
   const [scanBarcodeVisible, setScanBarcodeVisible] = useState(false);
   const [showScannedInputs, setShowScannedInputs] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
@@ -59,7 +60,7 @@ export default function Donate() {
   const [focusedInput, setFocusedInput] = useState(null);
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState('');
-  const [selectedDonor, setSelectedDonor] = useState("");
+  // const [selectedDonor, setSelectedDonor] = useState("");
   const [date, setDate] = useState(new Date());
   const [mode, setMode] = useState('date');
   const [show, setShow] = useState(false);
@@ -69,7 +70,17 @@ export default function Donate() {
   const previousZoomRef = useRef(null);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0.1);
+  const [resetForm, setResetForm] = useState(false);
 
+  useEffect(() => {
+    // Fetch donors, recipients, and drugs data initially
+    fetchDonors();
+    fetchRecipients();
+    fetchDrugs();
+  }, []);
+
+  
+  
   // Update DonationDate in donationForm state when date changes
   useEffect(() => {
     setDonationForm({
@@ -78,15 +89,7 @@ export default function Donate() {
     });
   }, [date]); // Only re-run the effect if date changes
 
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === 'ios');
-    setDate(currentDate);
-  };
 
-  const showDatepicker = () => {
-    setShow(true);
-  };
 
   const handleRecipientChange = (recipientId) => {
     const selectedRecipient = recipients.find(recipient => recipient.RecipientId.toString() === recipientId);
@@ -100,7 +103,6 @@ export default function Donate() {
       }));
     }
   };
-
 
 
   const handleFocus = (inputName) => {
@@ -154,6 +156,7 @@ export default function Donate() {
         Form: "",
         DonationPurpose: "",
         DonationDate: "",
+        ProductionDate: "2024-03-31",
         Laboratory: "",
         LaboratoryCountry: "",
         LOT: "",
@@ -161,6 +164,9 @@ export default function Donate() {
         GTIN: "",
         Serial: "",
       });
+
+      // Toggle the reset flag to force reset the form fields
+      setResetForm(true);
 
       // Display success message
       setSuccessVisible(true);
@@ -180,13 +186,30 @@ export default function Donate() {
     }
   };
 
-  // Function to navigate to list screen
-  const goToListScreen = () => {
-    // Navigate to the "/list" screen
-    // Replace this with your navigation logic
-    // console.log("Navigating to list screen...");
-  };
-
+  // Effect to reset the form fields when the reset flag changes
+  useEffect(() => {
+    if (resetForm) {
+      setDonationForm({
+        DonorId: "",
+        RecipientId: "",
+        DrugName: "",
+        Quantity: "",
+        Presentation: "",
+        Form: "",
+        DonationPurpose: "",
+        DonationDate: "",
+        ProductionDate: "2024-03-31",
+        Laboratory: "",
+        LaboratoryCountry: "",
+        LOT: "",
+        ExpiryDate: "",
+        GTIN: "",
+        Serial: "",
+      });
+      // Reset the reset flag
+      setResetForm(false);
+    }
+  }, [resetForm]);
 
   const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
@@ -228,12 +251,16 @@ export default function Donate() {
       console.log("Scanned EXP:", response.exp);
       console.log("Scanned Serial:", response.sn);
 
+      // Format the expiration date as YYYY-MM-DD
+      const expDate = response.exp;
+      const formattedExpDate = expDate ? `20${expDate.slice(0, 2)}-${expDate.slice(2, 4)}-${expDate.slice(4)}` : '';
+
       // Update state with the scanned data
       setDonationForm({
         ...donationForm,
         GTIN: response.gtin,
         LOT: response.lot,
-        ExpiryDate: response.exp,
+        ExpiryDate: formattedExpDate,
         Serial: response.sn,
       });
 
@@ -247,8 +274,6 @@ export default function Donate() {
       setErrorMessage(error.message);
     }
   };
-
-
 
   const handleScanBarcode = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
@@ -336,20 +361,6 @@ export default function Donate() {
     setZoom(prevZoom => Math.max(prevZoom - 0.1, 0));
   }
 
-  const handleDonorChange = (donorId) => {
-    const selectedDonor = donors.find((donor) => donor.id === donorId);
-    console.log("Selected Donor:", selectedDonor);
-    if (selectedDonor) {
-      setDonationForm((prevState) => ({
-        ...prevState,
-        DonorId: donorId,
-        DonorName: selectedDonor.DonorName
-      }));
-    } else {
-      console.error("Selected donor not found for ID:", donorId);
-    }
-  };
-
 
   return (
     <>
@@ -360,23 +371,29 @@ export default function Donate() {
       >
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <View style={styles.container}>
+            <Text className='text-3xl text-white font-semibold'>Donate</Text>
             <View >
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Donor:</Text>
-                <TextInput
-                  value={donationForm.DonorName}
-                  onChangeText={(text) =>
-                    setDonationForm({ ...donationForm, DonorName: text })
-                  }
-                  placeholder="donor name"
-                  placeholderTextColor="#999"
-                  style={[
-                    styles.input,
-                    focusedInput === "DonorName" && styles.inputFocused,
-                  ]}
-                  onFocus={() => handleFocus("DonorName")}
-                  onBlur={handleBlur}
-                />
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedDonorId}
+                    onValueChange={(itemValue, itemIndex) =>
+                      setSelectedDonorId(itemValue)
+                    }
+                    style={styles.picker}
+                    itemStyle={styles.pickerItem}
+                  >
+                    <Picker.Item label="Select a donor" value={null} />
+                    {donors && donors.map((donor) => (
+                      <Picker.Item
+                        key={`${donor.DonorId}-${donor.DonorName}`}
+                        label={donor.DonorName}
+                        value={donor}
+                      />
+                    ))}
+                  </Picker>
+                </View>
               </View>
 
               <View style={styles.inputGroup}>
@@ -402,21 +419,19 @@ export default function Donate() {
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Medicine Name:</Text>
-                <TextInput
-                  value={donationForm.DrugName}
-                  onChangeText={(text) =>
-                    setDonationForm({ ...donationForm, DrugName: text })
-                  }
-                  placeholder="medicine Name"
-                  placeholderTextColor="#999"
-                  style={[
-                    styles.input,
-                    focusedInput === "DrugName" && styles.inputFocused,
-                  ]}
-                  onFocus={() => handleFocus("DrugName")}
-                  onBlur={handleBlur}
-                />
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedDrugName}
+                    onValueChange={handleDrugNameChange}
+                    style={styles.picker}
+                  >
+                    {drugNames.map((name, index) => (
+                      <Picker.Item key={index} label={name} value={name} />
+                    ))}
+                  </Picker>
+                </View>
               </View>
+
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Presentation:</Text>
@@ -548,7 +563,7 @@ export default function Donate() {
                     placeholder="Lot#"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>
@@ -563,7 +578,7 @@ export default function Donate() {
                     placeholder="Exp"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>
@@ -578,7 +593,7 @@ export default function Donate() {
                     placeholder="Gtin"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>
@@ -593,7 +608,7 @@ export default function Donate() {
                     placeholder="Serial"
                     placeholderTextColor="#999"
                     style={styles.input}
-                    editable={false}
+                    editable={true}
                   />
                 )}
               </View>
@@ -695,13 +710,13 @@ const styles = StyleSheet.create({
   },
   input: {
     color: "#fff",
-    height: windowHeight * 0.06,
+    height: windowHeight * 0.07,
     width: windowWidth * 0.8,
     marginVertical: windowHeight * 0.01,
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 20,
     borderColor: "#fff",
-    padding: 10,
+    padding: 15,
   },
   placeholder: {
     color: "#fff",
@@ -716,13 +731,25 @@ const styles = StyleSheet.create({
   pickerContainer: {
     borderColor: '#fff',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 20,
     marginTop: 10,
+    height: windowHeight * 0.07,
   },
+  // pickerContainer: {
+  //   height: windowHeight * 0.07,
+  //   marginTop: 10,
+  //   marginBottom: 10,
+  //   // paddingLeft: 15,
+  //   paddingBottom: 20,
+  //   borderWidth: 1,
+  //   borderRadius: 20,
+  //   borderColor: '#fff'
+  // },
   picker: {
     color: '#fff',
     // height: 3,
     width: '100%',
+    borderRadius: 20,
     // paddingBottom:50
   },
   pickerItem: {
