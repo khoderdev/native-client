@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import uuid from 'react-native-uuid';
 import {
   View,
   StyleSheet,
@@ -12,16 +11,16 @@ import {
   Dimensions,
   ScrollView,
   Alert,
-  Linking
+  Linking,
+  Image
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker'
 import { useDonationContext } from "../contexts/DonationContext";
 import { Camera } from "expo-camera";
 import { TouchableOpacity } from "react-native";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Keyboard } from "react-native";
-import axios from "axios";
+
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -62,15 +61,19 @@ export default function Donate() {
   const [selectedRecipient, setSelectedRecipient] = useState('');
   // const [selectedDonor, setSelectedDonor] = useState("");
   const [date, setDate] = useState(new Date());
-  const [mode, setMode] = useState('date');
-  const [show, setShow] = useState(false);
+  // const [mode, setMode] = useState('date');
+  // const [show, setShow] = useState(false);
   const [type, setType] = useState(Camera.Constants.Type.back);
-  const [cameraVisible, setCameraVisible] = useState(true);
+  // const [cameraVisible, setCameraVisible] = useState(true);
   const cameraRef = useRef(null);
   const previousZoomRef = useRef(null);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0.1);
   const [resetForm, setResetForm] = useState(false);
+  const [barcodeData, setBarcodeData] = useState([]);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [numSections, setNumSections] = useState(1)
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     // Fetch donors, recipients, and drugs data initially
@@ -211,17 +214,25 @@ export default function Donate() {
     }
   }, [resetForm]);
 
-  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+  // Function to add a new barcode data object
+  const addBarcode = (newBarcode) => {
+    setBarcodeData([...barcodeData, newBarcode]);
+  };
+
+  // Function to handle barcode scanned
+  // Function to handle barcode scanned
+  const handleBarcodeScanned = ({ type, data }) => {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
     try {
-      const response = { gtin: '', lot: '', sn: '', exp: '' };
+      // Parse scanned data
+      const response = { GTIN: '', LOT: '', ExpiryDate: '', Serial: '' };
       let responseCode = data;
 
       const prefixes = [
-        { prefix: '01', key: 'gtin', length: 14 },
-        { prefix: '17', key: 'exp', length: 6 },
-        { prefix: '10', key: 'lot' },
-        { prefix: '21', key: 'sn' },
+        { prefix: '01', key: 'GTIN', length: 14 },
+        { prefix: '10', key: 'LOT' },
+        { prefix: '17', key: 'ExpiryDate', length: 6 },
+        { prefix: '21', key: 'Serial' },
       ];
 
       prefixes.forEach(({ prefix, key, length }) => {
@@ -232,10 +243,8 @@ export default function Donate() {
           let end;
 
           if (length) {
-            // For fixed-length AIs, calculate the end position based on the length
             end = start + length;
           } else {
-            // For variable-length AIs, find the position of the next GS or the end of the string
             const gsPosition = responseCode.indexOf(String.fromCharCode(29), start);
             end = gsPosition !== -1 ? gsPosition : responseCode.length;
           }
@@ -245,35 +254,28 @@ export default function Donate() {
         }
       });
 
-      // Log individual scanned values
-      console.log("Scanned GTIN:", response.gtin);
-      console.log("Scanned Lot:", response.lot);
-      console.log("Scanned EXP:", response.exp);
-      console.log("Scanned Serial:", response.sn);
-
-      // Format the expiration date as YYYY-MM-DD
-      const expDate = response.exp;
-      const formattedExpDate = expDate ? `20${expDate.slice(0, 2)}-${expDate.slice(2, 4)}-${expDate.slice(4)}` : '';
-
-      // Update state with the scanned data
-      setDonationForm({
-        ...donationForm,
-        GTIN: response.gtin,
-        LOT: response.lot,
-        ExpiryDate: formattedExpDate,
-        Serial: response.sn,
-      });
-
-      // Close the scan modal after scanning
-      setScanBarcodeVisible(false);
-      setShowScannedInputs(true);
+      // Append the parsed response to the barcode data
+      const newData = [...barcodeData, response];
+      setBarcodeData(newData);
+      setCameraVisible(false); // Close camera modal after scanning
+      setModalVisible(true); // Open modal to display new barcode section
     } catch (error) {
       console.error("Error parsing scanned data:", error);
-      // Handle error, such as displaying an error message to the user
-      setErrorVisible(true);
-      setErrorMessage(error.message);
+      // Handle error
     }
   };
+
+
+  // Function to open the camera modal and initiate scanning
+  const openCamera = () => {
+    setCameraVisible(true);
+  };
+
+  // Function to add more barcode input sections
+  const addMoreSections = () => {
+    openCamera();
+  };
+
 
   const handleScanBarcode = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
@@ -371,50 +373,172 @@ export default function Donate() {
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <View style={styles.container}>
 
-            <View >
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Donor:</Text>
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={selectedDonorId}
-                    onValueChange={(itemValue, itemIndex) =>
-                      setSelectedDonorId(itemValue)
-                    }
-                    style={styles.picker}
-                    itemStyle={styles.pickerItem}
-                  >
-                    <Picker.Item label="Select a donor" value={null} />
-                    {donors && donors.map((donor) => (
-                      <Picker.Item
-                        key={`${donor.DonorId}-${donor.DonorName}`}
-                        label={donor.DonorName}
-                        value={donor}
-                      />
-                    ))}
-                  </Picker>
+            <View style={styles.donorsIinputs}>
+              <View >
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Donor:</Text>
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      selectedValue={selectedDonorId}
+                      onValueChange={(itemValue, itemIndex) =>
+                        setSelectedDonorId(itemValue)
+                      }
+                      style={styles.picker}
+                      itemStyle={styles.pickerItem}
+                    >
+                      <Picker.Item label="Select a donor" value={null} />
+                      {donors && donors.map((donor) => (
+                        <Picker.Item
+                          key={`${donor.DonorId}-${donor.DonorName}`}
+                          label={donor.DonorName}
+                          value={donor}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Recipient:</Text>
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={selectedRecipient}
-                    onValueChange={handleRecipientChange}
-                    style={styles.picker}
-                    itemStyle={styles.pickerItem}
-                  >
-                    <Picker.Item label="Select" value="" />
-                    {recipients && recipients.map((recipient) => (
-                      <Picker.Item
-                        key={recipient.RecipientId}
-                        label={recipient.RecipientName}
-                        value={recipient.RecipientId.toString()}
-                      />
-                    ))}
-                  </Picker>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Recipient:</Text>
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      selectedValue={selectedRecipient}
+                      onValueChange={handleRecipientChange}
+                      style={styles.picker}
+                      itemStyle={styles.pickerItem}
+                    >
+                      <Picker.Item label="Select" value="" />
+                      {recipients && recipients.map((recipient) => (
+                        <Picker.Item
+                          key={recipient.RecipientId}
+                          label={recipient.RecipientName}
+                          value={recipient.RecipientId.toString()}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Purpose:</Text>
+                  <TextInput
+                    value={donationForm.DonationPurpose}
+                    onChangeText={(text) =>
+                      setDonationForm({ ...donationForm, DonationPurpose: text })
+                    }
+                    multiline={true}
+                    numberOfLines={4}
+                    placeholder="Donation Purpose"
+                    placeholderTextColor="#999"
+                    style={[
+                      styles.purposeInput,
+                      focusedInput === "DonationPurpose" && styles.inputFocused,
+                    ]}
+                    onFocus={() => handleFocus("DonationPurpose")}
+                    onBlur={handleBlur}
+                  />
                 </View>
               </View>
+            </View>
+
+            <View style={styles.barcodeContainer}>
+              <TouchableOpacity onPress={openCamera}>
+                <Image
+                  source={require("../../../assets/2d.png")}
+                  style={{
+                    width: 400,
+                    height: 150,
+                    resizeMode: "contain"
+                  }}
+                />
+              </TouchableOpacity>
+
+
+              <TouchableOpacity onPress={openCamera}>
+                <Image
+                  source={require("../../../assets/pressHere.png")}
+                  style={{
+                    width: 200,
+                    height: 80,
+                    resizeMode: "contain"
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Render dynamic barcode containers and inputs */}
+            {barcodeData.map((data, index) => (
+              <View key={index} style={styles.roundedContainer}>
+                <Text style={styles.topText}>2D Barcode</Text>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>GTIN:</Text>
+                  <TextInput
+                    value={data.GTIN}
+                    onChangeText={(text) => {
+                      const newData = [...barcodeData];
+                      newData[index].GTIN = text;
+                      setBarcodeData(newData);
+                    }}
+                    placeholder="Gtin"
+                    placeholderTextColor="#999"
+                    style={styles.input}
+                    editable={true}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>LOT/Batch Number:</Text>
+                  <TextInput
+                    value={data.LOT}
+                    onChangeText={(text) => {
+                      const newData = [...barcodeData];
+                      newData[index].LOT = text;
+                      setBarcodeData(newData);
+                    }}
+                    placeholder="Lot#"
+                    placeholderTextColor="#999"
+                    style={styles.input}
+                    editable={true}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>EXP:</Text>
+                  <TextInput
+                    value={data.ExpiryDate}
+                    onChangeText={(text) => {
+                      const newData = [...barcodeData];
+                      newData[index].ExpiryDate = text;
+                      setBarcodeData(newData);
+                    }}
+                    placeholder="Exp"
+                    placeholderTextColor="#999"
+                    style={styles.input}
+                    editable={true}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Serial:</Text>
+                  <TextInput
+                    value={data.Serial}
+                    onChangeText={(text) => {
+                      const newData = [...barcodeData];
+                      newData[index].Serial = text;
+                      setBarcodeData(newData);
+                    }}
+                    placeholder="Serial"
+                    placeholderTextColor="#999"
+                    style={styles.input}
+                    editable={true}
+                  />
+                </View>
+              </View>
+            ))}
+
+            <View style={styles.roundedContainer}>
+              <Text style={styles.topText}>Medication Details</Text>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Medicine Name:</Text>
@@ -431,45 +555,84 @@ export default function Donate() {
                 </View>
               </View>
 
+              <View className='flex flex-row gap-6'>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Presentation:</Text>
+                  <TextInput
+                    value={donationForm.Presentation}
+                    onChangeText={(text) =>
+                      setDonationForm({ ...donationForm, Presentation: text })
+                    }
+                    placeholder="Presentation"
+                    placeholderTextColor="#999"
+                    style={[
+                      styles.presentationFormInput,
+                      focusedInput === "presentation" && styles.inputFocused,
+                    ]}
+                    onFocus={() => handleFocus("presentation")}
+                    onBlur={handleBlur}
+                  />
+                </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Presentation:</Text>
-                <TextInput
-                  value={donationForm.Presentation}
-                  onChangeText={(text) =>
-                    setDonationForm({ ...donationForm, Presentation: text })
-                  }
-                  placeholder="Presentation"
-                  placeholderTextColor="#999"
-                  style={[
-                    styles.input,
-                    focusedInput === "presentation" && styles.inputFocused,
-                  ]}
-                  onFocus={() => handleFocus("presentation")}
-                  onBlur={handleBlur}
-                />
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Form:</Text>
+                  <TextInput
+                    value={donationForm.Form}
+                    onChangeText={(text) =>
+                      setDonationForm({ ...donationForm, Form: text })
+                    }
+                    placeholder="Form"
+                    placeholderTextColor="#999"
+                    style={[
+                      styles.presentationFormInput,
+                      focusedInput === "Form" && styles.inputFocused,
+                    ]}
+                    onFocus={() => handleFocus("Form")}
+                    onBlur={handleBlur}
+                  />
+                </View>
+              </View>
+
+              <View className='flex flex-row gap-6'>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Laboratory:</Text>
+                  <TextInput
+                    value={donationForm.Laboratory}
+                    onChangeText={(text) =>
+                      setDonationForm({ ...donationForm, Laboratory: text })
+                    }
+                    placeholder="Laboratory"
+                    placeholderTextColor="#999"
+                    style={[
+                      styles.presentationFormInput,
+                      focusedInput === "laboratory" && styles.inputFocused,
+                    ]}
+                    onFocus={() => handleFocus("laboratory")}
+                    onBlur={handleBlur}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Lab Country:</Text>
+                  <TextInput
+                    value={donationForm.LaboratoryCountry}
+                    onChangeText={(text) =>
+                      setDonationForm({ ...donationForm, LaboratoryCountry: text })
+                    }
+                    placeholder="Laboratory Country"
+                    placeholderTextColor="#999"
+                    style={[
+                      styles.presentationFormInput,
+                      focusedInput === "LaboratoryCountry" && styles.inputFocused,
+                    ]}
+                    onFocus={() => handleFocus("LaboratoryCountry")}
+                    onBlur={handleBlur}
+                  />
+                </View>
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Form:</Text>
-                <TextInput
-                  value={donationForm.Form}
-                  onChangeText={(text) =>
-                    setDonationForm({ ...donationForm, Form: text })
-                  }
-                  placeholder="Form"
-                  placeholderTextColor="#999"
-                  style={[
-                    styles.input,
-                    focusedInput === "Form" && styles.inputFocused,
-                  ]}
-                  onFocus={() => handleFocus("Form")}
-                  onBlur={handleBlur}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Quantity:</Text>
+                <Text style={styles.qtyLabel}>Add Quantity</Text>
                 <TextInput
                   value={donationForm.Quantity}
                   onChangeText={(text) => {
@@ -483,7 +646,7 @@ export default function Donate() {
                   placeholder="Quantity"
                   placeholderTextColor="#999"
                   style={[
-                    styles.input,
+                    styles.quantityInput,
                     focusedInput === "Quantity" && styles.inputFocused,
                   ]}
                   onFocus={() => handleFocus("Quantity")}
@@ -491,133 +654,19 @@ export default function Donate() {
                   keyboardType="numeric"
                 />
               </View>
+            </View>
 
+            <SuccessMessage visible={successVisible} />
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Laboratory:</Text>
-                <TextInput
-                  value={donationForm.Laboratory}
-                  onChangeText={(text) =>
-                    setDonationForm({ ...donationForm, Laboratory: text })
-                  }
-                  placeholder="Laboratory"
-                  placeholderTextColor="#999"
-                  style={[
-                    styles.input,
-                    focusedInput === "laboratory" && styles.inputFocused,
-                  ]}
-                  onFocus={() => handleFocus("laboratory")}
-                  onBlur={handleBlur}
-                />
-              </View>
+            <View style={styles.errorTextContainer}>
+              <ErrorMessage visible={errorVisible} message={errorMessage} />
+            </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Lab Country:</Text>
-                <TextInput
-                  value={donationForm.LaboratoryCountry}
-                  onChangeText={(text) =>
-                    setDonationForm({ ...donationForm, LaboratoryCountry: text })
-                  }
-                  placeholder="Laboratory Country"
-                  placeholderTextColor="#999"
-                  style={[
-                    styles.input,
-                    focusedInput === "LaboratoryCountry" && styles.inputFocused,
-                  ]}
-                  onFocus={() => handleFocus("LaboratoryCountry")}
-                  onBlur={handleBlur}
-                />
-              </View>
+            <View style={styles.buttonsContainer}>
 
-
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Purpose:</Text>
-                <TextInput
-                  value={donationForm.DonationPurpose}
-                  onChangeText={(text) =>
-                    setDonationForm({ ...donationForm, DonationPurpose: text })
-                  }
-                  placeholder="Donation Purpose"
-                  placeholderTextColor="#999"
-                  style={[
-                    styles.input,
-                    focusedInput === "DonationPurpose" && styles.inputFocused,
-                  ]}
-                  onFocus={() => handleFocus("DonationPurpose")}
-                  onBlur={handleBlur}
-                />
-              </View>
-
-
-              {/* Conditionally Render the Scanned QR inputs after optaing the data */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>LOT#:</Text>
-                {showScannedInputs && (
-                  <TextInput
-                    value={donationForm.LOT}
-                    onChangeText={(text) =>
-                      setDonationForm({ ...donationForm, LOT: text })
-                    }
-                    placeholder="Lot#"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    editable={true}
-                  />
-                )}
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>EXP:</Text>
-                {showScannedInputs && (
-                  <TextInput
-                    value={donationForm.ExpiryDate}
-                    onChangeText={(text) =>
-                      setDonationForm({ ...donationForm, ExpiryDate: text })
-                    }
-                    placeholder="Exp"
-                    placeholderTextColor="#999"
-                    
-                    style={styles.input}
-                    editable={true}
-                  />
-                )}
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>GTIN:</Text>
-                {showScannedInputs && (
-                  <TextInput
-                    value={donationForm.GTIN}
-                    onChangeText={(text) =>
-                      setDonationForm({ ...donationForm, GTIN: text })
-                    }
-                    placeholder="Gtin"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    editable={true}
-                  />
-                )}
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Serial:</Text>
-                {showScannedInputs && (
-                  <TextInput
-                    value={donationForm.Serial}
-                    onChangeText={(text) =>
-                      setDonationForm({ ...donationForm, Serial: text })
-                    }
-                    placeholder="Serial"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    editable={true}
-                  />
-                )}
-              </View>
-
-              <SuccessMessage visible={successVisible} />
-
-              <View style={styles.errorTextContainer}>
-                <ErrorMessage visible={errorVisible} message={errorMessage} />
-              </View>
+              <TouchableOpacity style={styles.addMoreBtn} onPress={addMoreSections}>
+                <Text style={styles.addMoreBtnText}>Add more</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.submitButton}
@@ -627,72 +676,68 @@ export default function Donate() {
               </TouchableOpacity>
             </View>
 
-            {/* <Text style={styles.scanText}>Scan</Text> */}
-            <Modal visible={scanBarcodeVisible} animationType="slide">
-              <TouchableWithoutFeedback onPress={dismissKeyboard}>
-                <View style={styles.cameraContainer}>
-                  <Camera
-                    style={styles.camera}
-                    type={type}
-                    flashMode={flashMode}
-                    ref={cameraRef}
-                    zoom={zoom}
-                    autoFocus={Camera.Constants.AutoFocus.on}
-                    onTouchStart={handlePinchGesture}
-                    onTouchMove={handlePinchGesture}
-                    onTouchEnd={() => previousZoomRef.current = null}
-                    onBarCodeScanned={handleBarcodeScanned}
-                  >
-                    <View style={styles.buttonContainer}>
-                      <TouchableOpacity style={styles.iconButton} onPress={flipCamera}>
-                        <MaterialCommunityIcons name="camera-switch" size={24} color="white" />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
-                        <MaterialCommunityIcons name={flashMode === Camera.Constants.FlashMode.off ? 'flash-off' : 'flash'} size={24} color="white" />
-                      </TouchableOpacity>
-                    </View>
-                  </Camera>
-
-                  <View style={styles.zoomButtonsContainer}>
-                    <TouchableOpacity style={styles.zoomInButton} onPress={zoomIn}>
-                      <Text style={styles.text}>+</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.zoomOutButton} onPress={zoomOut}>
-                      <Text style={styles.text}>-</Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  <TouchableOpacity
-                    onPress={handleCloseBarcodeModal}
-                    style={styles.closeButton}
-                  >
-                    <AntDesign name="close" size={24} color="#00a651" />
-                  </TouchableOpacity>
-                </View>
-              </TouchableWithoutFeedback>
+            {/* Camera modal */}
+            <Modal visible={cameraVisible} animationType="slide">
+              <View style={styles.cameraContainer}>
+                <Camera
+                  style={styles.camera}
+                  type={Camera.Constants.Type.back}
+                  onBarCodeScanned={handleBarcodeScanned}
+                />
+                <TouchableOpacity style={styles.closeButton} onPress={() => setCameraVisible(false)}>
+                  <AntDesign name="close" size={24} color="#00a651" />
+                </TouchableOpacity>
+              </View>
             </Modal>
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>
-      <MaterialCommunityIcons
-        name="qrcode-scan"
-        size={windowWidth * 0.1}
-        style={styles.scanIcon}
-        onPress={handleScanBarcode}
-      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
   scrollViewContent: {
+    backgroundColor: '#fff',
     flexGrow: 1,
-    backgroundColor: "#fff",
     alignItems: "center",
     paddingBottom: 80,
     paddingTop: 25,
-    borderWidth: 2,
   },
+
+  roundedContainer: {
+    width: "auto",
+    borderWidth: 1,
+    borderColor: '#999',
+    borderRadius: 20,
+    padding: 10,
+    paddingTop: 20,
+    position: 'relative',
+    marginBottom: 20,
+    marginVertical: 10
+  },
+
+  barcodeContainer: {
+    width: "auto",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    position: 'relative',
+    marginVertical: 25
+  },
+
+  topText: {
+    backgroundColor: '#fff',
+    position: 'absolute',
+    top: -15,
+    paddingHorizontal: 10,
+    alignSelf: 'center',
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#999"
+  },
+
   container: {
     alignItems: "center",
     justifyContent: "flex-start",
@@ -700,9 +745,11 @@ const styles = StyleSheet.create({
     padding: 0,
     marginBottom: 20
   },
+
   datePicker: {
     width: "100%",
   },
+
   input: {
     color: "#000",
     height: windowHeight * 0.07,
@@ -713,9 +760,80 @@ const styles = StyleSheet.create({
     borderColor: "#00a651",
     padding: 15,
   },
+
+  quantityInput: {
+    color: "#000",
+    height: windowHeight * 0.07,
+    width: windowWidth * 0.8,
+    marginVertical: windowHeight * 0.01,
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#00a651",
+    padding: 15,
+    alignSelf: "center"
+  },
+
+  presentationFormInput: {
+    color: "#000",
+    height: windowHeight * 0.07,
+    width: windowWidth * 0.4,
+    marginVertical: windowHeight * 0.01,
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#00a651",
+    padding: 15,
+  },
+
+  donorsIinputs: {
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#999",
+    padding: 15,
+    marginBottom: 20
+  },
+
+  containerTitleContainer: {
+    position: 'relative',
+    borderBottomWidth: 1,
+    borderBottomColor: 'black',
+  },
+
+  containerTitle: {
+    position: 'absolute',
+    top: -10,
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+  },
+
+  scanInputs: {
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#999",
+    padding: 15,
+    marginBottom: 20
+  },
+
+  drugInfoInputs: {
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#999",
+    padding: 15,
+  },
+
+  purposeInput: {
+    color: "#000",
+    width: windowWidth * 0.8,
+    marginVertical: windowHeight * 0.01,
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#00a651",
+    padding: 10,
+  },
+
   placeholder: {
     color: "#121212",
   },
+
   inputFocused: {
     borderColor: "#00a651",
   },
@@ -723,6 +841,7 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: 20,
   },
+
   pickerContainer: {
     borderColor: '#00a651',
     borderWidth: 1,
@@ -736,6 +855,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 20,
   },
+
   pickerItem: {
     color: '#000',
     fontSize: 16,
@@ -747,6 +867,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  qtyLabel: {
+    color: "#999",
+    marginRight: 10,
+    fontSize: 16,
+    fontWeight: "bold",
+    alignSelf: "center"
+  },
+
   successMessage: {
     backgroundColor: "#00a651",
     flexDirection: "row",
@@ -756,29 +884,34 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
   },
+
   successText: {
     color: "white",
     fontWeight: "bold",
     marginLeft: 5,
   },
+
   errorTextContainer: {
     alignItems: "center",
     color: "red",
     fontWeight: "bold",
     marginTop: 5,
   },
+
   errorText: {
     color: "red",
     fontWeight: "bold",
     marginLeft: 5,
     marginTop: 5,
   },
+
   closeButton: {
     position: "absolute",
     top: windowHeight * 0.05,
     right: windowWidth * 0.05,
     zIndex: 1,
   },
+
   scanText: {
     position: "absolute",
     color: "#0096FF",
@@ -788,6 +921,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     fontFamily: "Roboto",
   },
+
   scanIcon: {
     position: "absolute",
     color: "#00a651",
@@ -795,21 +929,43 @@ const styles = StyleSheet.create({
     right: windowWidth * 0.06,
     zIndex: 1,
   },
-  submitButton: {
-    position: "absolute",
-    bottom: -50,
-    left: 100,
+
+  buttonsContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: 300,
+  },
+
+  addMoreBtn: {
     zIndex: 1,
     backgroundColor: "#00a651",
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 5,
+    borderRadius: 60,
   },
-  submitButtonText: {
+
+  submitButton: {
+    zIndex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 60,
+    borderColor: "#00a651"
+  },
+
+  addMoreBtnText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
   },
+
+  submitButtonText: {
+    color: "#00a651",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
   cameraContainer: {
     backgroundColor: "#fff",
     flex: 1,
@@ -818,6 +974,7 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
+
   buttonContainer: {
     flexDirection: "column",
     justifyContent: "space-between",
@@ -828,13 +985,16 @@ const styles = StyleSheet.create({
     gap: 10,
 
   },
+
   text: {
     fontSize: 24,
     color: "white",
   },
+
   iconButton: {
     padding: 10,
   },
+
   zoomButtonsContainer: {
     position: 'absolute',
     bottom: 20,
@@ -843,21 +1003,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
+
   zoomInButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
     marginHorizontal: 5,
-
   },
+
   zoomOutButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
     paddingHorizontal: 22,
     paddingVertical: 10,
     marginHorizontal: 5,
-
   },
 });
 

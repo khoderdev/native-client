@@ -68,36 +68,41 @@ import React from "react";
 import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 
-import { DonationProvider } from "../contexts/DonationContext";
+import { DonationProvider, useDonationContext  } from "../contexts/DonationContext";
+import { ListProvider } from "../contexts/ListContext";
+
 
 export default function TabOneScreen() {
   const navigation = useNavigation();
+  const { donations } = useDonationContext(); 
+
 
   return (
     <DonationProvider>
-      <View style={styles.container}>
-        <Image
-          source={require("../../../assets/logo.png")}
-          style={styles.image}
-        />
+      <ListProvider donations={donations}>
+        <View style={styles.container}>
+          <Image
+            source={require("../../../assets/logo.png")}
+            style={styles.image}
+          />
 
-        <View className="flex flex-row w-full justify-around p-10 mt-36">
-          <TouchableOpacity onPress={() => navigation.navigate('donate')}>
-            <Image
-              source={require("../../../assets/1.png")}
-              style={styles.buttonImage}
-            />
-          </TouchableOpacity>
+          <View className="flex flex-row w-full justify-around p-10 mt-36">
+            <TouchableOpacity onPress={() => navigation.navigate('donate')}>
+              <Image
+                source={require("../../../assets/1.png")}
+                style={styles.buttonImage}
+              />
+            </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate('list')}>
-            <Image
-              source={require("../../../assets/2.png")}
-              style={styles.buttonImage}
-            />
-
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('list')}>
+              <Image
+                source={require("../../../assets/2.png")}
+                style={styles.buttonImage}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </ListProvider>
     </DonationProvider>
   );
 }
@@ -107,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "flex-start",
-    backgroundColor:"#fff",
+    backgroundColor: "#fff",
     padding: 10
   },
 
