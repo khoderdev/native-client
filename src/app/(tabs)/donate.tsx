@@ -3,8 +3,6 @@ import {
   View,
   StyleSheet,
   TextInput,
-  StatusBar,
-  Platform,
   Modal,
   TouchableWithoutFeedback,
   Text,
@@ -59,12 +57,8 @@ export default function Donate() {
   const [focusedInput, setFocusedInput] = useState(null);
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState('');
-  // const [selectedDonor, setSelectedDonor] = useState("");
   const [date, setDate] = useState(new Date());
-  // const [mode, setMode] = useState('date');
-  // const [show, setShow] = useState(false);
   const [type, setType] = useState(Camera.Constants.Type.back);
-  // const [cameraVisible, setCameraVisible] = useState(true);
   const cameraRef = useRef(null);
   const previousZoomRef = useRef(null);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
@@ -219,7 +213,7 @@ export default function Donate() {
     setBarcodeData([...barcodeData, newBarcode]);
   };
 
-  // Function to handle barcode scanned
+
   // Function to handle barcode scanned
   const handleBarcodeScanned = ({ type, data }) => {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
@@ -265,6 +259,11 @@ export default function Donate() {
     }
   };
 
+  // Function to handle adding more barcode sections
+  const handleAddMoreBarcode = () => {
+    // Open camera modal for scanning new barcode
+    setCameraVisible(true);
+  };
 
   // Function to open the camera modal and initiate scanning
   const openCamera = () => {
@@ -274,6 +273,7 @@ export default function Donate() {
   // Function to add more barcode input sections
   const addMoreSections = () => {
     openCamera();
+    setModalVisible(true);
   };
 
 
@@ -362,6 +362,11 @@ export default function Donate() {
   function zoomOut() {
     setZoom(prevZoom => Math.max(prevZoom - 0.1, 0));
   }
+
+  const handleCloseModals = () => {
+    setCameraVisible(false);
+    setModalVisible(false);
+  };
 
 
   return (
@@ -465,77 +470,94 @@ export default function Donate() {
                 />
               </TouchableOpacity>
             </View>
+            <Modal visible={modalVisible} animationType="slide">
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={styles.scrollViewContent}
+              >
+                <View >
+                  {/* Render dynamic barcode containers and inputs */}
+                  {barcodeData.map((data, index) => (
+                    <View key={index} style={styles.roundedContainer}>
+                      <Text style={styles.topText}>2D Barcode</Text>
 
-            {/* Render dynamic barcode containers and inputs */}
-            {barcodeData.map((data, index) => (
-              <View key={index} style={styles.roundedContainer}>
-                <Text style={styles.topText}>2D Barcode</Text>
+                      <View style={styles.inputGroup}>
+                        <Text style={styles.label}>GTIN:</Text>
+                        <TextInput
+                          value={data.GTIN}
+                          onChangeText={(text) => {
+                            const newData = [...barcodeData];
+                            newData[index].GTIN = text;
+                            setBarcodeData(newData);
+                          }}
+                          placeholder="Gtin"
+                          placeholderTextColor="#999"
+                          style={styles.input}
+                          editable={true}
+                        />
+                      </View>
 
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>GTIN:</Text>
-                  <TextInput
-                    value={data.GTIN}
-                    onChangeText={(text) => {
-                      const newData = [...barcodeData];
-                      newData[index].GTIN = text;
-                      setBarcodeData(newData);
-                    }}
-                    placeholder="Gtin"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    editable={true}
-                  />
+                      <View style={styles.inputGroup}>
+                        <Text style={styles.label}>LOT/Batch Number:</Text>
+                        <TextInput
+                          value={data.LOT}
+                          onChangeText={(text) => {
+                            const newData = [...barcodeData];
+                            newData[index].LOT = text;
+                            setBarcodeData(newData);
+                          }}
+                          placeholder="Lot#"
+                          placeholderTextColor="#999"
+                          style={styles.input}
+                          editable={true}
+                        />
+                      </View>
+
+                      <View style={styles.inputGroup}>
+                        <Text style={styles.label}>EXP:</Text>
+                        <TextInput
+                          value={data.ExpiryDate}
+                          onChangeText={(text) => {
+                            const newData = [...barcodeData];
+                            newData[index].ExpiryDate = text;
+                            setBarcodeData(newData);
+                          }}
+                          placeholder="Exp"
+                          placeholderTextColor="#999"
+                          style={styles.input}
+                          editable={true}
+                        />
+                      </View>
+
+                      <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Serial:</Text>
+                        <TextInput
+                          value={data.Serial}
+                          onChangeText={(text) => {
+                            const newData = [...barcodeData];
+                            newData[index].Serial = text;
+                            setBarcodeData(newData);
+                          }}
+                          placeholder="Serial"
+                          placeholderTextColor="#999"
+                          style={styles.input}
+                          editable={true}
+                        />
+                      </View>
+                    </View>
+                  ))}
+                  {/* Add more button for adding new barcode section */}
+                  <TouchableOpacity onPress={handleAddMoreBarcode}>
+                    <Text>Add more</Text>
+                  </TouchableOpacity>
+
+                  {/* Close button for the modal */}
+                  <TouchableOpacity onPress={() => setModalVisible(false)}>
+                    <Text>Close</Text>
+                  </TouchableOpacity>
                 </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>LOT/Batch Number:</Text>
-                  <TextInput
-                    value={data.LOT}
-                    onChangeText={(text) => {
-                      const newData = [...barcodeData];
-                      newData[index].LOT = text;
-                      setBarcodeData(newData);
-                    }}
-                    placeholder="Lot#"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    editable={true}
-                  />
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>EXP:</Text>
-                  <TextInput
-                    value={data.ExpiryDate}
-                    onChangeText={(text) => {
-                      const newData = [...barcodeData];
-                      newData[index].ExpiryDate = text;
-                      setBarcodeData(newData);
-                    }}
-                    placeholder="Exp"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    editable={true}
-                  />
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Serial:</Text>
-                  <TextInput
-                    value={data.Serial}
-                    onChangeText={(text) => {
-                      const newData = [...barcodeData];
-                      newData[index].Serial = text;
-                      setBarcodeData(newData);
-                    }}
-                    placeholder="Serial"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    editable={true}
-                  />
-                </View>
-              </View>
-            ))}
+              </ScrollView>
+            </Modal>
 
             <View style={styles.roundedContainer}>
               <Text style={styles.topText}>Medication Details</Text>
@@ -684,9 +706,10 @@ export default function Donate() {
                   type={Camera.Constants.Type.back}
                   onBarCodeScanned={handleBarcodeScanned}
                 />
-                <TouchableOpacity style={styles.closeButton} onPress={() => setCameraVisible(false)}>
+                <TouchableOpacity style={styles.closeButton} onPress={handleCloseModals}>
                   <AntDesign name="close" size={24} color="#00a651" />
                 </TouchableOpacity>
+
               </View>
             </Modal>
           </View>
