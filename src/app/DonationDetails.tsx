@@ -245,7 +245,7 @@
 // export default DonationDetails;
 
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Modal, Pressable, ScrollView, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet, Modal, Pressable, ScrollView, TextInput, Button, TouchableOpacity } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import colors from "../misc/colors";
 import { useDonationContext } from "./contexts/DonationContext";
@@ -269,6 +269,15 @@ interface DonationDetailsProps {
     };
     onClose: () => void;
 }
+
+const CustomButton = ({ title, onPress }) => {
+    return (
+        <TouchableOpacity style={styles.button} onPress={onPress}>
+            <Text style={styles.buttonText}>{title}</Text>
+        </TouchableOpacity>
+    );
+};
+
 
 const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) => {
     const { donationForm, setDonationForm, recipients } = useDonationContext();
@@ -365,7 +374,7 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                     <View style={styles.header}>
                         <Text style={styles.title}>Donation Details</Text>
                         <Pressable style={styles.closeIconContainer} onPress={onClose}>
-                            <Ionicons name="close" size={24} color={colors.LIGHT} />
+                            <Ionicons name="close" size={26} color={colors.PRIMARY} />
                         </Pressable>
                     </View>
 
@@ -378,7 +387,7 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                                 ) : (
                                     <TextInput
                                         style={styles.input}
-                                        value={donationForm[key] !== undefined ? donationForm[key].toString() : ""}
+                                        value={donationForm[key] != null ? donationForm[key].toString() : ""}
                                         onChangeText={(text) =>
                                             setDonationForm((prevData) => ({
                                                 ...prevData,
@@ -387,22 +396,24 @@ const DonationDetails: React.FC<DonationDetailsProps> = ({ donation, onClose }) 
                                         }
                                         editable={editableFields.includes(key)}
                                     />
+
                                 )}
                             </View>
                         ))}
 
                     </ScrollView>
                     {!editMode ? (
-                        <Button title="Edit" onPress={() => setEditMode(true)} />
+                        <CustomButton title="Edit" onPress={() => setEditMode(true)} />
                     ) : (
                         <View style={styles.buttonsContainer}>
-                            <Button title="Cancel" onPress={() => {
+                            <CustomButton title="Cancel" onPress={() => {
                                 setDonationForm(donation);
                                 setEditMode(false);
                             }} />
-                            <Button title="Update" onPress={handleSave} />
+                            <CustomButton title="Update" onPress={handleSave} />
                         </View>
                     )}
+
                 </View>
             </Pressable>
         </Modal>
@@ -469,12 +480,35 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: 10,
         right: 10,
+        color: "#00a651",
     },
 
     buttonsContainer: {
         flexDirection: "row",
         justifyContent: "space-around",
         marginTop: 10,
+    },
+    cancelButton: {
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderRadius: 60,
+        borderColor: "#00a651",
+    },
+    cancelButtonText: {
+        color: '#00a651',
+    },
+
+    button: {
+        backgroundColor: "#00a651",
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 60,
+        alignItems: "center",
+    },
+    buttonText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "bold",
     },
 
 });

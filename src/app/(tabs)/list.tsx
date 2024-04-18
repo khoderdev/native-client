@@ -292,11 +292,16 @@ const Donation = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>Are you sure you want to deselect all items?</Text>
             <View style={styles.modalButtons}>
-              <Button onPress={handleModalConfirm}>Yes</Button>
-              <Button onPress={handleModalCancel}>No</Button>
+              <TouchableOpacity onPress={handleModalConfirm}>
+                <Text style={[styles.buttonsText, styles.button]}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleModalCancel}>
+                <Text style={[styles.buttonsText, styles.button]}>No</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
+
       </Modal>
     </View>
   );
@@ -376,6 +381,20 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 8
+
+  },
+
+  buttonsText: {
+    color: "#00a651",
+  },
+
+  button: {
+    borderWidth: 1,
+    borderColor: "#00a651",
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
   },
 });
 

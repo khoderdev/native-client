@@ -371,7 +371,7 @@
 //       >
 //         <TouchableWithoutFeedback onPress={dismissKeyboard}>
 //           <View style={styles.container}>
-  
+
 //             <View style={styles.donorsIinputs}>
 //               <View>
 //                 <View style={styles.inputGroup}>
@@ -396,7 +396,7 @@
 //                     </Picker>
 //                   </View>
 //                 </View>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>Recipient:</Text>
 //                   <View style={styles.pickerContainer}>
@@ -417,7 +417,7 @@
 //                     </Picker>
 //                   </View>
 //                 </View>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>Purpose:</Text>
 //                   <TextInput
@@ -439,7 +439,7 @@
 //                 </View>
 //               </View>
 //             </View>
-  
+
 //             <View style={styles.barcodeContainer}>
 //               <TouchableOpacity onPress={openCamera}>
 //                 <Image
@@ -451,8 +451,8 @@
 //                   }}
 //                 />
 //               </TouchableOpacity>
-  
-  
+
+
 //               <TouchableOpacity onPress={openCamera}>
 //                 <Image
 //                   source={require("../../../assets/pressHere.png")}
@@ -464,12 +464,12 @@
 //                 />
 //               </TouchableOpacity>
 //             </View>
-  
+
 //             {/* Render dynamic barcode containers and inputs */}
 //             {barcodeData.map((data, index) => (
 //               <View key={index} style={styles.roundedContainer}>
 //                 <Text style={styles.topText}>2D Barcode</Text>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>GTIN:</Text>
 //                   <TextInput
@@ -485,7 +485,7 @@
 //                     editable={true}
 //                   />
 //                 </View>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>LOT/Batch Number:</Text>
 //                   <TextInput
@@ -501,7 +501,7 @@
 //                     editable={true}
 //                   />
 //                 </View>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>EXP:</Text>
 //                   <TextInput
@@ -517,7 +517,7 @@
 //                     editable={true}
 //                   />
 //                 </View>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>Serial:</Text>
 //                   <TextInput
@@ -535,10 +535,10 @@
 //                 </View>
 //               </View>
 //             ))}
-  
+
 //             <View style={styles.roundedContainer}>
 //               <Text style={styles.topText}>Medication Details</Text>
-  
+
 //               <View style={styles.inputGroup}>
 //                 <Text style={styles.label}>Medicine Name:</Text>
 //                 <View style={styles.pickerContainer}>
@@ -553,7 +553,7 @@
 //                   </Picker>
 //                 </View>
 //               </View>
-  
+
 //               <View style={{ flexDirection: 'row', gap: 6 }}>
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>Presentation:</Text>
@@ -572,7 +572,7 @@
 //                     onBlur={handleBlur}
 //                   />
 //                 </View>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>Form:</Text>
 //                   <TextInput
@@ -591,7 +591,7 @@
 //                   />
 //                 </View>
 //               </View>
-  
+
 //               <View style={{ flexDirection: 'row', gap: 6 }}>
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>Laboratory:</Text>
@@ -610,7 +610,7 @@
 //                     onBlur={handleBlur}
 //                   />
 //                 </View>
-  
+
 //                 <View style={styles.inputGroup}>
 //                   <Text style={styles.label}>Lab Country:</Text>
 //                   <TextInput
@@ -629,7 +629,7 @@
 //                   />
 //                 </View>
 //               </View>
-  
+
 //               <View style={styles.inputGroup}>
 //                 <Text style={styles.qtyLabel}>Add Quantity</Text>
 //                 <TextInput
@@ -654,19 +654,19 @@
 //                 />
 //               </View>
 //             </View>
-  
+
 //             <SuccessMessage visible={successVisible} />
-  
+
 //             <View style={styles.errorTextContainer}>
 //               <ErrorMessage visible={errorVisible} message={errorMessage} />
 //             </View>
-  
+
 //             <View style={styles.buttonsContainer}>
-  
+
 //               <TouchableOpacity style={styles.addMoreBtn} onPress={addMoreSections}>
 //                 <Text style={styles.addMoreBtnText}>Add more</Text>
 //               </TouchableOpacity>
-  
+
 //               <TouchableOpacity
 //                 style={styles.submitButton}
 //                 onPress={handleSubmit}
@@ -674,7 +674,7 @@
 //                 <Text style={styles.submitButtonText}>Submit</Text>
 //               </TouchableOpacity>
 //             </View>
-  
+
 //             {/* Camera modal */}
 //             <Modal visible={cameraVisible} animationType="slide">
 //               <View style={styles.cameraContainer}>
@@ -2127,7 +2127,7 @@ export default function Donate() {
       ...donationForm,
       DonationDate: date,
     });
-  }, [date]); 
+  }, [date]);
 
 
 
@@ -2139,7 +2139,7 @@ export default function Donate() {
       setDonationForm(prevState => ({
         ...prevState,
         RecipientId: recipientIdInt,
-        RecipientName: selectedRecipient.RecipientName 
+        RecipientName: selectedRecipient.RecipientName
       }));
     }
   };
@@ -2173,6 +2173,19 @@ export default function Donate() {
     try {
       Keyboard.dismiss();
 
+
+      // Add barcode data to the donationForm
+      const lastBarcode = barcodeData[barcodeData.length - 1];
+      if (lastBarcode) {
+        setDonationForm(prevState => ({
+          ...prevState,
+          LOT: lastBarcode.LOT || prevState.LOT,
+          ExpiryDate: lastBarcode.ExpiryDate || prevState.ExpiryDate,
+          GTIN: lastBarcode.GTIN || prevState.GTIN,
+
+        }));
+      }
+
       // Perform form validation
       if (
         !donationForm.LOT ||
@@ -2184,6 +2197,7 @@ export default function Donate() {
 
       // Add donation
       await addDonation();
+
 
       // Clear form fields only if submission is successful
       setDonationForm({
@@ -2208,10 +2222,15 @@ export default function Donate() {
       // Toggle the reset flag to force reset the form fields
       setResetForm(true);
 
+      // Clear barcode data
+      setBarcodeData([]);
+
       // Display success message
       setSuccessVisible(true);
+
       // Display confirmation modal
       handleConfirmation();
+
       // Hide the success message after 2 seconds
       setTimeout(() => {
         setSuccessVisible(true);
@@ -2257,59 +2276,59 @@ export default function Donate() {
   };
 
   // Function to handle barcode scanned
-const handleBarcodeScanned = ({ type, data }) => {
-  console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
-  try {
-    // Parse scanned data
-    const response = { GTIN: '', LOT: '', ExpiryDate: '', Serial: '' };
-    let responseCode = data;
+  const handleBarcodeScanned = ({ type, data }) => {
+    console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
+    try {
+      // Parse scanned data
+      const response = { GTIN: '', LOT: '', ExpiryDate: '', Serial: '' };
+      let responseCode = data;
 
-    const prefixes = [
-      { prefix: '01', key: 'GTIN', length: 14 },
-      { prefix: '10', key: 'LOT' },
-      { prefix: '17', key: 'ExpiryDate', length: 6 },
-      { prefix: '21', key: 'Serial' },
-    ];
+      const prefixes = [
+        { prefix: '01', key: 'GTIN', length: 14 },
+        { prefix: '10', key: 'LOT' },
+        { prefix: '17', key: 'ExpiryDate', length: 6 },
+        { prefix: '21', key: 'Serial' },
+      ];
 
-    prefixes.forEach(({ prefix, key, length }) => {
-      const position = responseCode.indexOf(prefix);
+      prefixes.forEach(({ prefix, key, length }) => {
+        const position = responseCode.indexOf(prefix);
 
-      if (position !== -1) {
-        const start = position + prefix.length;
-        let end;
+        if (position !== -1) {
+          const start = position + prefix.length;
+          let end;
 
-        if (length) {
-          end = start + length;
-        } else {
-          const gsPosition = responseCode.indexOf(String.fromCharCode(29), start);
-          end = gsPosition !== -1 ? gsPosition : responseCode.length;
+          if (length) {
+            end = start + length;
+          } else {
+            const gsPosition = responseCode.indexOf(String.fromCharCode(29), start);
+            end = gsPosition !== -1 ? gsPosition : responseCode.length;
+          }
+
+          response[key] = responseCode.substring(start, end);
+          responseCode = responseCode.slice(0, position) + responseCode.slice(end);
         }
+      });
 
-        response[key] = responseCode.substring(start, end);
-        responseCode = responseCode.slice(0, position) + responseCode.slice(end);
-      }
-    });
+      // Append the parsed response to the barcode data
+      const newData = [...barcodeData, response];
+      setBarcodeData(newData);
+      setCameraVisible(false); // Close camera modal after scanning
+      setModalVisible(true); // Open modal to display new barcode section
+    } catch (error) {
+      console.error("Error parsing scanned data:", error);
+      // Handle error
+    }
+  };
 
-    // Append the parsed response to the barcode data
-    const newData = [...barcodeData, response];
-    setBarcodeData(newData);
-    setCameraVisible(false); // Close camera modal after scanning
-    setModalVisible(true); // Open modal to display new barcode section
-  } catch (error) {
-    console.error("Error parsing scanned data:", error);
-    // Handle error
-  }
-};
+  // Function to open the camera modal and initiate scanning
+  const openCamera = () => {
+    setCameraVisible(true);
+  };
 
-// Function to open the camera modal and initiate scanning
-const openCamera = () => {
-  setCameraVisible(true);
-};
-
-// Function to add more barcode input sections
-const addMoreSections = () => {
-  openCamera();
-};
+  // Function to add more barcode input sections
+  const addMoreSections = () => {
+    openCamera();
+  };
 
 
   const handleScanBarcode = async () => {
@@ -2406,7 +2425,7 @@ const addMoreSections = () => {
       >
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <View style={styles.container}>
-  
+
             <View style={styles.donorsIinputs}>
               <View>
                 <View style={styles.inputGroup}>
@@ -2431,7 +2450,7 @@ const addMoreSections = () => {
                     </Picker>
                   </View>
                 </View>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Recipient:</Text>
                   <View style={styles.pickerContainer}>
@@ -2452,7 +2471,7 @@ const addMoreSections = () => {
                     </Picker>
                   </View>
                 </View>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Purpose:</Text>
                   <TextInput
@@ -2474,7 +2493,7 @@ const addMoreSections = () => {
                 </View>
               </View>
             </View>
-  
+
             <View style={styles.barcodeContainer}>
               <TouchableOpacity onPress={openCamera}>
                 <Image
@@ -2486,8 +2505,8 @@ const addMoreSections = () => {
                   }}
                 />
               </TouchableOpacity>
-  
-  
+
+
               <TouchableOpacity onPress={openCamera}>
                 <Image
                   source={require("../../../assets/pressHere.png")}
@@ -2499,12 +2518,12 @@ const addMoreSections = () => {
                 />
               </TouchableOpacity>
             </View>
-  
+
             {/* Render dynamic barcode containers and inputs */}
             {barcodeData.map((data, index) => (
               <View key={index} style={styles.roundedContainer}>
                 <Text style={styles.topText}>2D Barcode</Text>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>GTIN:</Text>
                   <TextInput
@@ -2520,7 +2539,7 @@ const addMoreSections = () => {
                     editable={true}
                   />
                 </View>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>LOT/Batch Number:</Text>
                   <TextInput
@@ -2536,7 +2555,7 @@ const addMoreSections = () => {
                     editable={true}
                   />
                 </View>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>EXP:</Text>
                   <TextInput
@@ -2552,7 +2571,7 @@ const addMoreSections = () => {
                     editable={true}
                   />
                 </View>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Serial:</Text>
                   <TextInput
@@ -2570,10 +2589,10 @@ const addMoreSections = () => {
                 </View>
               </View>
             ))}
-  
+
             <View style={styles.roundedContainer}>
               <Text style={styles.topText}>Medication Details</Text>
-  
+
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Medicine Name:</Text>
                 <View style={styles.pickerContainer}>
@@ -2588,7 +2607,7 @@ const addMoreSections = () => {
                   </Picker>
                 </View>
               </View>
-  
+
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Presentation:</Text>
@@ -2607,7 +2626,7 @@ const addMoreSections = () => {
                     onBlur={handleBlur}
                   />
                 </View>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Form:</Text>
                   <TextInput
@@ -2626,7 +2645,7 @@ const addMoreSections = () => {
                   />
                 </View>
               </View>
-  
+
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Laboratory:</Text>
@@ -2645,7 +2664,7 @@ const addMoreSections = () => {
                     onBlur={handleBlur}
                   />
                 </View>
-  
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Lab Country:</Text>
                   <TextInput
@@ -2664,7 +2683,7 @@ const addMoreSections = () => {
                   />
                 </View>
               </View>
-  
+
               <View style={styles.inputGroup}>
                 <Text style={styles.qtyLabel}>Add Quantity</Text>
                 <TextInput
@@ -2689,19 +2708,19 @@ const addMoreSections = () => {
                 />
               </View>
             </View>
-  
+
             <SuccessMessage visible={successVisible} />
-  
+
             <View style={styles.errorTextContainer}>
               <ErrorMessage visible={errorVisible} message={errorMessage} />
             </View>
-  
+
             <View style={styles.buttonsContainer}>
-  
+
               <TouchableOpacity style={styles.addMoreBtn} onPress={addMoreSections}>
                 <Text style={styles.addMoreBtnText}>Add more</Text>
               </TouchableOpacity>
-  
+
               <TouchableOpacity
                 style={styles.submitButton}
                 onPress={handleSubmit}
@@ -2709,7 +2728,7 @@ const addMoreSections = () => {
                 <Text style={styles.submitButtonText}>Submit</Text>
               </TouchableOpacity>
             </View>
-  
+
             {/* Camera modal */}
             <Modal visible={cameraVisible} animationType="slide">
               <View style={styles.cameraContainer}>
