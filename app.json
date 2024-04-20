@@ -1,12 +1,11 @@
 {
   "expo": {
     "name": "MedLeb Donations",
-    "slug": "med-donation",
-    "scheme": "med-donation",
+    "slug": "medleb-donations",
+    "scheme": "medleb-donations",
     "userInterfaceStyle": "automatic",
     "orientation": "default",
     "web": {
-      // "output": "static",
       "bundler": "metro"
     },
     "icon": "./assets/favicon.png",
@@ -27,11 +26,20 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png"
       },
-      "permissions": [
-        "android.permission.CAMERA"
-      ],
+      "permissions": ["android.permission.CAMERA"],
       "package": "com.meddonation.meddonation"
     },
+    // "plugins": [
+    //   [
+    //     "expo-router",
+    //     {
+    //       "origin": "https://n"
+    //     }
+    //   ],
+    //   ["expo-camera"],
+    //   "expo-build-properties"
+    // ],
+
     "plugins": [
       [
         "expo-router",
@@ -39,9 +47,8 @@
           "origin": "https://n"
         }
       ],
-      [
-        "expo-camera"
-      ]
+      ["expo-camera"],
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
     ],
     "experiments": {
       "typedRoutes": true

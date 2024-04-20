@@ -123,6 +123,7 @@ const Donation = () => {
     return donor ? donor.DonorName : 'Unknown';
   }
 
+
   const generateExcel = async () => {
     try {
       if (!storagePermissionGranted) {
@@ -142,21 +143,50 @@ const Donation = () => {
         throw new Error('Sharing is not available on this device.');
       }
 
-      const selectedDonations = donations.filter(donation => selectedItemIds.includes(donation.DonationId));
+      let selectedDonations = [];
+      let sheetName = '';
+
+      if (selectedItemIds.length > 0) {
+        selectedDonations = donations.filter(donation => selectedItemIds.includes(donation.DonationId));
+        sheetName = 'SelectedDonations';
+      } else {
+        selectedDonations = donations;
+        sheetName = 'AllDonations';
+      }
+
+      if (selectedDonations.length === 0) {
+        Alert.alert('No Selection', 'No donations to export.');
+        return;
+      }
+
+      const wsData = selectedDonations.map(donation => ({
+        DonationId: donation.DonationId,
+        DonorName: getDonorName(donation.DonorId),
+        RecipientName: getRecipientName(donation.RecipientId),
+        DonationDate: donation.DonationDate,
+        DonationPurpose: donation.DonationPurpose,
+        DrugName: donation.DrugName,
+        Quantity: donation.Quantity,
+        Presentation: donation.Presentation,
+        Form: donation.Form,
+        LOT: donation.LOT,
+        GTIN: donation.GTIN,
+        Serial: donation.Serial,
+        Laboratory: donation.Laboratory,
+        LaboratoryCountry: donation.LaboratoryCountry,
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(wsData);
 
       const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-      selectedDonations.forEach((donation, index) => {
-        const ws = XLSX.utils.json_to_sheet([donation]);
-        XLSX.utils.book_append_sheet(wb, ws, `Donation${index + 1}`);
-      });
+      const excelFile = XLSX.write(wb, { type: 'base64' });
 
-      const base64 = XLSX.write(wb, { type: 'base64' });
-
-      const filename = 'SelectedDonations.xlsx';
+      const filename = `${sheetName}.xlsx`;
 
       const filePath = `${FileSystem.documentDirectory}${filename}`;
-      await FileSystem.writeAsStringAsync(filePath, base64, {
+      await FileSystem.writeAsStringAsync(filePath, excelFile, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
@@ -164,7 +194,7 @@ const Donation = () => {
 
       await Sharing.shareAsync(filePath);
 
-      Alert.alert('Success', 'Excel file exported and saved to device storage.');
+      // Alert.alert('Success', 'Excel file exported and saved to device storage.');
     } catch (error) {
       console.error('Error exporting data:', error);
       Alert.alert('Export Failed', 'Failed to export data. Please try again.');
@@ -257,9 +287,6 @@ const Donation = () => {
           />
         }
       />
-
-
-
       {selectedDonation && (
         <DonationDetails
           donation={selectedDonation}
@@ -301,7 +328,6 @@ const Donation = () => {
             </View>
           </View>
         </View>
-
       </Modal>
     </View>
   );

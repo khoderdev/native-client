@@ -87,6 +87,26 @@ export const DonationProvider = ({ children }) => {
     fetchData();
   }, []);
 
+  // const fetchDrugNames = async () => {
+  //   try {
+  //     const response = await axios.get("http://1.1.1.250:3000/drugs/all");
+  //     const drugsData = response.data;
+  //     const drugNames = drugsData.map((drug) => drug.DrugName);
+
+  //     setDrugNames(drugNames);
+  //     if (drugNames.length > 0) {
+  //       setSelectedDrugName();
+  //       setDonationForm((prevState) => ({
+  //         ...prevState,
+  //         DrugName: drugNames[0],
+  //       }));
+  //     }
+  //   } catch (error) {
+  //     handleAxiosError("Error fetching drug names:", error);
+  //   }
+  // };
+
+  // Fetch drug names
   const fetchDrugNames = async () => {
     try {
       const response = await axios.get("http://1.1.1.250:3000/drugs/all");
@@ -95,10 +115,10 @@ export const DonationProvider = ({ children }) => {
 
       setDrugNames(drugNames);
       if (drugNames.length > 0) {
-        setSelectedDrugName();
+        setSelectedDrugName(drugNames[0]); // Select the first drug name by default
         setDonationForm((prevState) => ({
           ...prevState,
-          DrugName: drugNames[0],
+          DrugName: drugNames[0], // Set the initial drug name in the donation form
         }));
       }
     } catch (error) {
