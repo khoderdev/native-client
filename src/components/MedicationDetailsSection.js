@@ -34,7 +34,7 @@ const MedicationDetailsSection = ({
     <View style={styles.roundedContainer}>
       {/* Medicine Name */}
       <Text style={styles.topText}>Medication Details</Text>
-      <Text style={styles.label}>Medicine Name:</Text>
+      <Text style={styles.label}>Brand Name</Text>
       <View style={[styles.pickerContainer, { justifyContent: "center" }]}>
         <Picker
           selectedValue={selectedDrugName}
@@ -54,7 +54,7 @@ const MedicationDetailsSection = ({
       {/* Presentation and Form */}
       <View style={styles.flexRowContainer}>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Presentation:</Text>
+          <Text style={styles.label}>Presentation</Text>
           <TextInput
             value={presentationValue}
             onChangeText={(text) => setPresentationValue(text)}
@@ -67,7 +67,7 @@ const MedicationDetailsSection = ({
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Form:</Text>
+          <Text style={styles.label}>Form</Text>
           <TextInput
             value={formValue}
             onChangeText={(text) => setFormValue(text)}
@@ -83,7 +83,7 @@ const MedicationDetailsSection = ({
       {/* Laboratory and Lab Country */}
       <View style={styles.flexRowContainer}>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Laboratory:</Text>
+          <Text style={styles.label}>Laboratory</Text>
           <TextInput
             value={laboratoryValue}
             onChangeText={(text) => setLaboratoryValue(text)}
@@ -96,7 +96,7 @@ const MedicationDetailsSection = ({
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Lab Country:</Text>
+          <Text style={styles.label}>Country</Text>
           <TextInput
             value={labCountryValue}
             onChangeText={(text) => setLabCountryValue(text)}
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 20,
     marginTop: 10,
-    height: 50,
+    height: 45,
     marginBottom: 20,
   },
   picker: {
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   quantityInput: {
     color: "#000",
-    height: windowHeight * 0.07,
+    height: windowHeight * 0.06,
     width: windowWidth * 0.8,
     marginVertical: windowHeight * 0.01,
     borderWidth: 1,
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
 
   presentationFormInput: {
     color: "#000",
-    height: windowHeight * 0.07,
+    height: windowHeight * 0.06,
     width: windowWidth * 0.4,
     marginVertical: windowHeight * 0.01,
     borderWidth: 1,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   quantityInput: {
     color: "#000",
-    height: 50,
+    height: 45,
     width: "100%",
     borderWidth: 1,
     borderRadius: 20,

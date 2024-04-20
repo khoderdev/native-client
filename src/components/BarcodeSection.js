@@ -157,11 +157,11 @@ const BarcodeSection = ({ setModalVisible }) => {
 
               {[...Array(drugCount)].map((_, index) => (
                 <View key={index} style={styles.mainRoundedContainer}>
-                  <Text style={styles.topText}>Drug {index + 1}</Text>
+                  <Text style={styles.drugTopText}>Drug {index + 1}</Text>
                   {scannedData && scannedData[index] && (
                     <View style={styles.roundedContainer}>
                       <Text style={styles.topText}>2d Barcode</Text>
-                      <Text style={styles.label}>GTIN:</Text>
+                      <Text style={styles.label}>GTIN</Text>
                       <TextInput
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].GTIN}
@@ -173,7 +173,7 @@ const BarcodeSection = ({ setModalVisible }) => {
                           })
                         }
                       />
-                      <Text style={styles.label}>LOT/Batch Number:</Text>
+                      <Text style={styles.label}>LOT/Batch Number</Text>
                       <TextInput
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].LOT}
@@ -185,7 +185,7 @@ const BarcodeSection = ({ setModalVisible }) => {
                           })
                         }
                       />
-                      <Text style={styles.label}>Expiry Date:</Text>
+                      <Text style={styles.label}>Expiry Date</Text>
                       <TextInput
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].ExpiryDate}
@@ -197,7 +197,7 @@ const BarcodeSection = ({ setModalVisible }) => {
                           })
                         }
                       />
-                      <Text style={styles.label}>Serial Number:</Text>
+                      <Text style={styles.label}>Serial Number</Text>
                       <TextInput
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].Serial}
@@ -333,6 +333,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#999",
   },
+  drugTopText: {
+    backgroundColor: "#fff",
+    position: "absolute",
+    top: -15,
+    paddingHorizontal: 10,
+    alignSelf: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#121212",
+  },
 
   barcodeDataContainer: {
     marginBottom: 20,
@@ -357,7 +367,7 @@ const styles = StyleSheet.create({
 
   input: {
     color: "#000",
-    height: windowHeight * 0.07,
+    height: windowHeight * 0.06,
     width: windowWidth * 0.8,
     marginVertical: windowHeight * 0.01,
     borderWidth: 1,
