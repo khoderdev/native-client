@@ -1,7 +1,10 @@
 // Donor.js
 import React from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet, Dimensions } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
 const Donor = ({
   selectedDonorId,
@@ -75,6 +78,7 @@ const Donor = ({
           placeholderTextColor="#999"
           style={[
             styles.purposeInput,
+            { textAlign: "center" },
             focusedInput === "DonationPurpose" && styles.inputFocused,
           ]}
           onFocus={() => handleFocus("DonationPurpose")}
@@ -87,15 +91,35 @@ const Donor = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
+    color: "#999",
     marginRight: 10,
     fontSize: 16,
     fontWeight: "bold",
+  },
+
+  pickerContainer: {
+    borderColor: "#00a651",
+    borderWidth: 1,
+    borderRadius: 20,
+    marginTop: 10,
+    height: windowHeight * 0.07,
+  },
+
+  purposeInput: {
+    color: "#000",
+    width: windowWidth * 0.8,
+    marginTop: 10,
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: "#00a651",
+    padding: 10,
+    // paddingTop: 10,
   },
 });
 

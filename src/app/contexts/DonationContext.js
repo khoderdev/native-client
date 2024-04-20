@@ -95,7 +95,7 @@ export const DonationProvider = ({ children }) => {
 
       setDrugNames(drugNames);
       if (drugNames.length > 0) {
-        setSelectedDrugName(drugNames[0]);
+        setSelectedDrugName();
         setDonationForm((prevState) => ({
           ...prevState,
           DrugName: drugNames[0],

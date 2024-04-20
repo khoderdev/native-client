@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, Button } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Button,
+  TouchableWithoutFeedback,
+} from "react-native";
 import BarcodeSection from "../../components/BarcodeSection";
 import Donor from "../../components/Donor";
 import { useDonationContext } from "../contexts/DonationContext";
@@ -17,6 +24,8 @@ const Donate = () => {
     setModalVisible,
     setScannedData,
   } = useDonationContext();
+
+  const [isSubmitPressed, setIsSubmitPressed] = useState(false);
 
   // State for barcode
   const [barcodeData, setBarcodeData] = useState(null);
@@ -51,28 +60,35 @@ const Donate = () => {
   // Handler for submit button pressed
   const handlePressSubmitButton = () => {
     console.log("Submit button pressed");
+    // setIsSubmitPressed(true);
     handleSubmit();
+    setIsSubmitPressed(true);
+
+    // Simulate button release after 200 milliseconds
+    setTimeout(() => {
+      setIsSubmitPressed(false);
+    }, 200);
   };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.innerContainer}>
-        <Text style={styles.title}>Donate Medication</Text>
-
         {/* Donor Section */}
-        <Donor
-          selectedDonorId={selectedDonorId}
-          setSelectedDonorId={setSelectedDonorId}
-          donors={donors}
-          selectedRecipient={selectedRecipient}
-          handleRecipientChange={(value) => setSelectedRecipient(value)}
-          recipients={recipients}
-          donationForm={donationForm}
-          setDonationForm={setDonationForm}
-          focusedInput={focusedInput}
-          handleFocus={handleFocus}
-          handleBlur={handleBlur}
-        />
+        <View style={styles.roundedContainer}>
+          <Donor
+            selectedDonorId={selectedDonorId}
+            setSelectedDonorId={setSelectedDonorId}
+            donors={donors}
+            selectedRecipient={selectedRecipient}
+            handleRecipientChange={(value) => setSelectedRecipient(value)}
+            recipients={recipients}
+            donationForm={donationForm}
+            setDonationForm={setDonationForm}
+            focusedInput={focusedInput}
+            handleFocus={handleFocus}
+            handleBlur={handleBlur}
+          />
+        </View>
 
         {/* Barcode Section */}
         <BarcodeSection
@@ -82,11 +98,28 @@ const Donate = () => {
           setModalVisible={setModalVisible}
           setScannedData={setScannedData}
         />
-
         {/* Submit Button */}
-        <View style={styles.submitButtonContainer}>
-          <Button title="Submit" onPress={handlePressSubmitButton} />
-        </View>
+        <TouchableWithoutFeedback
+          onPress={handlePressSubmitButton}
+          onPressIn={() => setIsSubmitPressed(true)}
+          onPressOut={() => setIsSubmitPressed(false)}
+        >
+          <View
+            style={[
+              styles.submitButton,
+              isSubmitPressed && styles.submitButtonPressed,
+            ]}
+          >
+            <Text
+              style={[
+                styles.submitButtonText,
+                isSubmitPressed && styles.submitButtonTextPressed,
+              ]}
+            >
+              Submit
+            </Text>
+          </View>
+        </TouchableWithoutFeedback>
       </View>
     </ScrollView>
   );
@@ -99,16 +132,48 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     paddingHorizontal: 20,
+    // paddingTop: 20,
+  },
+
+  roundedContainer: {
+    width: "auto",
+    borderWidth: 1,
+    borderColor: "#999",
+    borderRadius: 20,
+    padding: 10,
     paddingTop: 20,
+    position: "relative",
+    marginBottom: 20,
+    // marginVertical: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
   },
-  submitButtonContainer: {
-    marginTop: 20,
-    marginBottom: 50,
+
+  submitButtonText: {
+    color: "#00a651",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  submitButton: {
+    width: 100,
+    alignSelf: "center",
+    zIndex: 1,
+    paddingHorizontal: 23,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 60,
+    borderColor: "#00a651",
+    marginTop: 10,
+  },
+  submitButtonPressed: {
+    backgroundColor: "#00a651",
+  },
+  submitButtonTextPressed: {
+    color: "#fff", // Change to the desired text color when pressed
   },
 });
 

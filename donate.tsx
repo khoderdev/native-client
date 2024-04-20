@@ -22,8 +22,8 @@
 // // // import { Keyboard } from "react-native";
 
 
-// // // const windowWidth = Dimensions.get("window").width;
-// // // const windowHeight = Dimensions.get("window").height;
+// const windowWidth = Dimensions.get("window").width;
+// const windowHeight = Dimensions.get("window").height;
 
 // // // const SuccessMessage = ({ visible }: { visible: boolean }) =>
 // // //   visible ? (
@@ -440,30 +440,30 @@
 // // //               </View>
 // // //             </View>
 
-// // //             <View style={styles.barcodeContainer}>
-// // //               <TouchableOpacity onPress={openCamera}>
-// // //                 <Image
-// // //                   source={require("../../../assets/2d.png")}
-// // //                   style={{
-// // //                     width: 400,
-// // //                     height: 150,
-// // //                     resizeMode: "contain"
-// // //                   }}
-// // //                 />
-// // //               </TouchableOpacity>
+//             <View style={styles.barcodeContainer}>
+//               <TouchableOpacity onPress={openCamera}>
+//                 <Image
+//                   source={require("../../../assets/2d.png")}
+//                   style={{
+//                     width: 400,
+//                     height: 150,
+//                     resizeMode: "contain"
+//                   }}
+//                 />
+//               </TouchableOpacity>
 
 
-// // //               <TouchableOpacity onPress={openCamera}>
-// // //                 <Image
-// // //                   source={require("../../../assets/pressHere.png")}
-// // //                   style={{
-// // //                     width: 200,
-// // //                     height: 80,
-// // //                     resizeMode: "contain"
-// // //                   }}
-// // //                 />
-// // //               </TouchableOpacity>
-// // //             </View>
+//               <TouchableOpacity onPress={openCamera}>
+//                 <Image
+//                   source={require("../../../assets/pressHere.png")}
+//                   style={{
+//                     width: 200,
+//                     height: 80,
+//                     resizeMode: "contain"
+//                   }}
+//                 />
+//               </TouchableOpacity>
+//             </View>
 
 // // //             {/* Render dynamic barcode containers and inputs */}
 // // //             {barcodeData.map((data, index) => (
@@ -704,27 +704,27 @@
 // // //     paddingTop: 25,
 // // //   },
 
-// // //   roundedContainer: {
-// // //     width: "auto",
-// // //     borderWidth: 1,
-// // //     borderColor: '#999',
-// // //     borderRadius: 20,
-// // //     padding: 10,
-// // //     paddingTop: 20,
-// // //     position: 'relative',
-// // //     marginBottom: 20,
-// // //     marginVertical: 10
-// // //   },
+//   roundedContainer: {
+//     width: "auto",
+//     borderWidth: 1,
+//     borderColor: '#999',
+//     borderRadius: 20,
+//     padding: 10,
+//     paddingTop: 20,
+//     position: 'relative',
+//     marginBottom: 20,
+//     marginVertical: 10
+//   },
 
-// // //   barcodeContainer: {
-// // //     width: "auto",
-// // //     display: "flex",
-// // //     flexDirection: "column",
-// // //     justifyContent: "center",
-// // //     alignItems: "center",
-// // //     position: 'relative',
-// // //     marginVertical: 25
-// // //   },
+//   barcodeContainer: {
+//     width: "auto",
+//     display: "flex",
+//     flexDirection: "column",
+//     justifyContent: "center",
+//     alignItems: "center",
+//     position: 'relative',
+//     marginVertical: 25
+//   },
 
 // // //   topText: {
 // // //     backgroundColor: '#fff',
@@ -749,53 +749,53 @@
 // // //     width: "100%",
 // // //   },
 
-// // //   input: {
-// // //     color: "#000",
-// // //     height: windowHeight * 0.07,
-// // //     width: windowWidth * 0.8,
-// // //     marginVertical: windowHeight * 0.01,
-// // //     borderWidth: 1,
-// // //     borderRadius: 20,
-// // //     borderColor: "#00a651",
-// // //     padding: 15,
-// // //   },
+//   input: {
+//     color: "#000",
+//     height: windowHeight * 0.07,
+//     width: windowWidth * 0.8,
+//     marginVertical: windowHeight * 0.01,
+//     borderWidth: 1,
+//     borderRadius: 20,
+//     borderColor: "#00a651",
+//     padding: 15,
+//   },
 
-// // //   quantityInput: {
-// // //     color: "#000",
-// // //     height: windowHeight * 0.07,
-// // //     width: windowWidth * 0.8,
-// // //     marginVertical: windowHeight * 0.01,
-// // //     borderWidth: 1,
-// // //     borderRadius: 20,
-// // //     borderColor: "#00a651",
-// // //     padding: 15,
-// // //     alignSelf: "center"
-// // //   },
+//   quantityInput: {
+//     color: "#000",
+//     height: windowHeight * 0.07,
+//     width: windowWidth * 0.8,
+//     marginVertical: windowHeight * 0.01,
+//     borderWidth: 1,
+//     borderRadius: 20,
+//     borderColor: "#00a651",
+//     padding: 15,
+//     alignSelf: "center"
+//   },
 
-// // //   presentationFormInput: {
-// // //     color: "#000",
-// // //     height: windowHeight * 0.07,
-// // //     width: windowWidth * 0.4,
-// // //     marginVertical: windowHeight * 0.01,
-// // //     borderWidth: 1,
-// // //     borderRadius: 20,
-// // //     borderColor: "#00a651",
-// // //     padding: 15,
-// // //   },
+//   presentationFormInput: {
+//     color: "#000",
+//     height: windowHeight * 0.07,
+//     width: windowWidth * 0.4,
+//     marginVertical: windowHeight * 0.01,
+//     borderWidth: 1,
+//     borderRadius: 20,
+//     borderColor: "#00a651",
+//     padding: 15,
+//   },
 
-// // //   donorsIinputs: {
-// // //     borderWidth: 1,
-// // //     borderRadius: 20,
-// // //     borderColor: "#999",
-// // //     padding: 15,
-// // //     marginBottom: 20
-// // //   },
+//   donorsIinputs: {
+//     borderWidth: 1,
+//     borderRadius: 20,
+//     borderColor: "#999",
+//     padding: 15,
+//     marginBottom: 20
+//   },
 
-// // //   containerTitleContainer: {
-// // //     position: 'relative',
-// // //     borderBottomWidth: 1,
-// // //     borderBottomColor: 'black',
-// // //   },
+//   containerTitleContainer: {
+//     position: 'relative',
+//     borderBottomWidth: 1,
+//     borderBottomColor: 'black',
+//   },
 
 // // //   containerTitle: {
 // // //     position: 'absolute',
@@ -1834,15 +1834,15 @@
 // // //     padding: 15,
 // // //   },
 
-// // //   purposeInput: {
-// // //     color: "#000",
-// // //     width: windowWidth * 0.8,
-// // //     marginVertical: windowHeight * 0.01,
-// // //     borderWidth: 1,
-// // //     borderRadius: 20,
-// // //     borderColor: "#00a651",
-// // //     padding: 10,
-// // //   },
+//   purposeInput: {
+//     color: "#000",
+//     width: windowWidth * 0.8,
+//     marginVertical: windowHeight * 0.01,
+//     borderWidth: 1,
+//     borderRadius: 20,
+//     borderColor: "#00a651",
+//     padding: 10,
+//   },
 
 // // //   placeholder: {
 // // //     color: "#121212",
@@ -1951,13 +1951,13 @@
 // // //     width: 300,
 // // //   },
 
-// // //   addMoreBtn: {
-// // //     zIndex: 1,
-// // //     backgroundColor: "#00a651",
-// // //     paddingHorizontal: 20,
-// // //     paddingVertical: 10,
-// // //     borderRadius: 60,
-// // //   },
+//   addMoreBtn: {
+//     zIndex: 1,
+//     backgroundColor: "#00a651",
+//     paddingHorizontal: 20,
+//     paddingVertical: 10,
+//     borderRadius: 60,
+//   },
 
 // // //   submitButton: {
 // // //     zIndex: 1,
@@ -2398,12 +2398,12 @@
 // //                 <Text style={styles.addMoreBtnText}>Add more</Text>
 // //               </TouchableOpacity>
 
-// //               <TouchableOpacity
-// //                 style={styles.submitButton}
-// //                 onPress={handleSubmit}
-// //               >
-// //                 <Text style={styles.submitButtonText}>Submit</Text>
-// //               </TouchableOpacity>
+//               <TouchableOpacity
+//                 style={styles.submitButton}
+//                 onPress={handleSubmit}
+//               >
+//                 <Text style={styles.submitButtonText}>Submit</Text>
+//               </TouchableOpacity>
 // //             </View>
 
 
@@ -2579,13 +2579,13 @@
 // //     marginBottom: 20,
 // //   },
 
-// //   pickerContainer: {
-// //     borderColor: '#00a651',
-// //     borderWidth: 1,
-// //     borderRadius: 20,
-// //     marginTop: 10,
-// //     height: windowHeight * 0.07,
-// //   },
+//   pickerContainer: {
+//     borderColor: '#00a651',
+//     borderWidth: 1,
+//     borderRadius: 20,
+//     marginTop: 10,
+//     height: windowHeight * 0.07,
+//   },
 
 // //   picker: {
 // //     color: '#121212',
@@ -2683,12 +2683,12 @@
 // //   },
 
 // //   submitButton: {
-// //     zIndex: 1,
-// //     paddingHorizontal: 20,
-// //     paddingVertical: 10,
-// //     borderWidth: 1,
-// //     borderRadius: 60,
-// //     borderColor: "#00a651"
+//     zIndex: 1,
+//     paddingHorizontal: 20,
+//     paddingVertical: 10,
+//     borderWidth: 1,
+//     borderRadius: 60,
+//     borderColor: "#00a651"
 // //   },
 
 // //   addMoreBtnText: {
@@ -2697,11 +2697,11 @@
 // //     fontWeight: "bold",
 // //   },
 
-// //   submitButtonText: {
-// //     color: "#00a651",
-// //     fontSize: 16,
-// //     fontWeight: "bold",
-// //   },
+//   submitButtonText: {
+//     color: "#00a651",
+//     fontSize: 16,
+//     fontWeight: "bold",
+//   },
 
 // //   cameraContainer: {
 // //     backgroundColor: "#fff",
