@@ -904,12 +904,12 @@
 // // //     marginTop: 5,
 // // //   },
 
-// // //   closeButton: {
-// // //     position: "absolute",
-// // //     top: windowHeight * 0.05,
-// // //     right: windowWidth * 0.05,
-// // //     zIndex: 1,
-// // //   },
+//   closeButton: {
+//     position: "absolute",
+//     top: windowHeight * 0.05,
+//     right: windowWidth * 0.05,
+//     zIndex: 1,
+//   },
 
 // // //   scanText: {
 // // //     position: "absolute",

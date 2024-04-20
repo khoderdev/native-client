@@ -15,6 +15,7 @@ import {
 import { Camera } from "expo-camera";
 import MedicationDetailsSection from "./MedicationDetailsSection";
 import { useDonationContext } from "../app/contexts/DonationContext";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -116,7 +117,13 @@ const BarcodeSection = ({ setModalVisible }) => {
           onBarCodeScanned={handleBarcodeScannedLocal}
           style={{ flex: 1 }}
         />
-        <Button title="Close" onPress={() => setCameraVisible(false)} />
+        <TouchableOpacity
+          style={styles.closeButton}
+          title="Close"
+          onPress={() => setCameraVisible(false)}
+        >
+          <AntDesign name="close" size={24} color="#00a651" />
+        </TouchableOpacity>
       </Modal>
 
       {scannedData && scannedData.length > 0 && (
@@ -361,6 +368,13 @@ const styles = StyleSheet.create({
   },
   addToDonationBtnTextPressed: {
     color: "#008f47",
+  },
+
+  closeButton: {
+    position: "absolute",
+    top: windowHeight * 0.05,
+    right: windowWidth * 0.05,
+    zIndex: 1,
   },
 });
 
