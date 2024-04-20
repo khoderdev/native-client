@@ -37,30 +37,6 @@ const MedicationDetailsSection = ({
         </Picker>
       </View>
 
-      {/* <View style={styles.inputGroup}>
-        <Text style={styles.label}>Medicine Name:</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedDrugName}
-            onValueChange={(value) => handleDrugNameChange(value)}
-            style={[styles.picker, { textAlign: "center" }]}
-            itemStyle={{ textAlign: "center" }}
-          >
-            {drugNames && drugNames.length > 0 ? (
-              drugNames.map((name, index) => (
-                <Picker.Item key={index} label={name} value={name} />
-              ))
-            ) : (
-              <Picker.Item
-                label="No options available"
-                value=""
-                // textAlign="center"
-              />
-            )}
-          </Picker>
-        </View> */}
-      {/* </View> */}
-
       {/* Presentation and Form */}
       <View style={styles.flexRowContainer}>
         <View style={styles.inputGroup}>

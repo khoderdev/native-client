@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#00a651",
   },
   submitButtonTextPressed: {
-    color: "#fff", // Change to the desired text color when pressed
+    color: "#fff",
   },
 });
 
