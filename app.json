@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "MedLeb Donations",
+    "slug": "medleb-donations",
+    "scheme": "medleb-donations",
+    "userInterfaceStyle": "automatic",
+    "orientation": "default",
+    "web": {
+      "bundler": "metro"
+    },
+    "icon": "./assets/favicon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "icon": "./assets/ios-icon.png",
+      "supportsTablet": true,
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Med Donation need to Access Camera to Scan Medications QRCode."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "permissions": ["android.permission.CAMERA"],
+      "package": "com.meddonation.meddonation"
+    },
+    // "plugins": [
+    //   [
+    //     "expo-router",
+    //     {
+    //       "origin": "https://n"
+    //     }
+    //   ],
+    //   ["expo-camera"],
+    //   "expo-build-properties"
+    // ],
+
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://n"
+        }
+      ],
+      ["expo-camera"],
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://n"
+      },
+      "eas": {
+        "projectId": "1e85122e-f12c-403d-b6c4-ea6b9b5ad7db"
+      }
+    },
+    "owner": "meddonation"
+  }
+}
