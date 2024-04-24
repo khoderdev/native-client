@@ -1,5 +1,4 @@
-// Donor.js
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, Dimensions } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
@@ -11,14 +10,19 @@ const Donor = ({
   setSelectedDonorId,
   donors,
   selectedRecipient,
-  handleRecipientChange,
+  setSelectedRecipient,
   recipients,
+  setDonationPurpose,
   donationForm,
   setDonationForm,
   focusedInput,
   handleFocus,
   handleBlur,
 }) => {
+  useEffect(() => {
+    setDonationPurpose("");
+  }, [donationForm]);
+
   return (
     <View style={styles.container}>
       <View style={styles.inputGroup}>
@@ -49,11 +53,13 @@ const Donor = ({
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={selectedRecipient}
-            onValueChange={handleRecipientChange}
+            onValueChange={(itemValue, itemIndex) =>
+              setSelectedRecipient(itemValue)
+            }
             style={styles.picker}
             itemStyle={styles.pickerItem}
           >
-            <Picker.Item label="Select" value="" />
+            <Picker.Item label="Select" value={null} />
             {recipients &&
               recipients.map((recipient) => (
                 <Picker.Item
@@ -69,9 +75,10 @@ const Donor = ({
         <Text style={styles.label}>Purpose:</Text>
         <TextInput
           value={donationForm.DonationPurpose}
-          onChangeText={(text) =>
-            setDonationForm({ ...donationForm, DonationPurpose: text })
-          }
+          onChangeText={(text) => {
+            setDonationPurpose(text); 
+            setDonationForm({ ...donationForm, DonationPurpose: text });
+          }}
           multiline={true}
           numberOfLines={4}
           placeholder="Donation Purpose"

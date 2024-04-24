@@ -20,106 +20,31 @@ import { AntDesign } from "@expo/vector-icons";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-// const BarcodeSection = ({
-//   setModalVisible,
-//   scannedData,
-//   setScannedData,
-//   ...props
-// }) => {
-//   const {
-//     donationForm,
-//     setDonationForm,
-//     setSelectedDrugName,
-//     barcodeData,
-//     handleBarcodeScanned,
-//     handleAddToDonation,
-//     drugNames,
-//     fetchDrugNames,
-//   } = useDonationContext();
-
-//   const [cameraVisible, setCameraVisible] = useState(false);
-//   const [focusedInput, setFocusedInput] = useState("");
-//   const [addMoreButtonHover, setAddMoreButtonHover] = useState(false);
-//   const [addToDonationButtonHover, setAddToDonationButtonHover] =
-//     useState(false);
-//   const [addMoreButtonPressed, setAddMoreButtonPressed] = useState(false);
-//   const [addToDonationButtonPressed, setAddToDonationButtonPressed] =
-//     useState(false);
-//   const [drugCount, setDrugCount] = useState(1);
-//   const [selectedDrugNames, setSelectedDrugNames] = useState([]);
-//   const [isModalVisible, setIsModalVisible] = useState(false);
-
-//   useEffect(() => {
-//     if (props.barcodeData && props.barcodeData.length > 0) {
-//       setScannedData(props.barcodeData);
-//     }
-//   }, [props.barcodeData, setScannedData]);
-
-//   useEffect(() => {
-//     fetchDrugNames();
-//   }, []);
-
-//   const openCamera = () => {
-//     setCameraVisible(true);
-//   };
-
-//   const handleBarcodeScannedLocal = (data) => {
-//     handleBarcodeScanned(data);
-//     setCameraVisible(false);
-//     setModalVisible(true);
-//   };
-
-//   const resetState = () => {
-//     setScannedData([]);
-//     setDonationForm({ ...donationForm, LOT: "", ExpiryDate: "", GTIN: "" });
-//     setSelectedDrugName("");
-//     setModalVisible(false);
-//   };
-
-//   const handleAddMore = () => {
-//     setCameraVisible(true);
-//     setDrugCount((prevCount) => prevCount + 1);
-//     setSelectedDrugNames((prevNames) => [...prevNames, ""]);
-//   };
-
-//   const handleManualAddMore = () => {
-//     setDrugCount((prevCount) => prevCount + 1);
-//     setSelectedDrugNames((prevNames) => [...prevNames, ""]);
-//     setIsModalVisible(true);
-//   };
-
-//   const handleFocus = (inputName) => {
-//     setFocusedInput(inputName);
-//   };
-
-//   const handleBlur = () => {
-//     setFocusedInput("");
-//   };
-
-//   const handleDrugNameChange = (value, index) => {
-//     setSelectedDrugNames((prevNames) => {
-//       const updatedNames = [...prevNames];
-//       updatedNames[index] = value;
-//       return updatedNames;
-//     });
-//   };
-
 const BarcodeSection = ({
   setModalVisible,
-  donationForm,
-  setDonationForm,
-  setSelectedDrugName,
-  barcodeData,
-  setBarcodeData,
-  handleBarcodeScanned,
-  handleAddToDonation,
-  scannedData,
-  setScannedData,
   drugNames,
   fetchDrugNames,
   handleFieldChange,
-  ...props
 }) => {
+  const {
+    donationForm,
+    setDonationForm,
+    scannedData,
+    setScannedData,
+    handleAddToDonation,
+    response,
+    setLOT,
+    setGTIN,
+    setExpiryDate,
+    setSerial,
+    handleBarcodeScanned,
+  } = useDonationContext();
+
+  setLOT((response && response.LOT) || donationForm.LOT);
+  setExpiryDate((response && response.ExpiryDate) || donationForm.ExpiryDate);
+  setGTIN((response && response.GTIN) || donationForm.GTIN);
+  setSerial((response && response.Serial) || donationForm.Serial);
+
   const [cameraVisible, setCameraVisible] = useState(false);
   const [drugCount, setDrugCount] = useState(1);
   const [selectedDrugNames, setSelectedDrugNames] = useState([""]);
@@ -137,7 +62,6 @@ const BarcodeSection = ({
   };
 
   const handleBarcodeScannedLocal = (data) => {
-    setBarcodeData(data);
     handleBarcodeScanned(data);
     setCameraVisible(false);
     setModalVisible(true);
@@ -146,7 +70,6 @@ const BarcodeSection = ({
   const resetState = () => {
     setScannedData([]);
     setDonationForm({ ...donationForm, LOT: "", ExpiryDate: "", GTIN: "" });
-    setSelectedDrugName("");
     setModalVisible(false);
   };
 
@@ -204,7 +127,6 @@ const BarcodeSection = ({
         </TouchableOpacity>
       </View>
 
-      {/* Display modal for barcode scanning */}
       <Modal visible={cameraVisible}>
         <Camera
           onBarCodeScanned={handleBarcodeScannedLocal}
@@ -219,7 +141,6 @@ const BarcodeSection = ({
         </TouchableOpacity>
       </Modal>
 
-      {/* Modal for displaying scanned barcode data */}
       {scannedData && scannedData.length > 0 && (
         <Modal visible={true}>
           <ScrollView>
@@ -232,7 +153,6 @@ const BarcodeSection = ({
                 <AntDesign name="close" size={24} color="#00a651" />
               </TouchableOpacity>
 
-              {/* Render barcode data */}
               {[...Array(drugCount)].map((_, index) => (
                 <View key={index} style={styles.mainRoundedContainer}>
                   <Text style={styles.drugTopText}>Drug {index + 1}</Text>
@@ -244,7 +164,7 @@ const BarcodeSection = ({
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].GTIN}
                         onChangeText={(value) =>
-                          handleBarcodeInputChange(value, index, "GTIN")
+                          handleFieldChange(value, index, "GTIN")
                         }
                       />
                       <Text style={styles.label}>LOT/Batch Number</Text>
@@ -252,7 +172,7 @@ const BarcodeSection = ({
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].LOT}
                         onChangeText={(value) =>
-                          handleBarcodeInputChange(value, index, "LOT")
+                          handleFieldChange(value, index, "LOT")
                         }
                       />
                       <Text style={styles.label}>Expiry Date</Text>
@@ -260,7 +180,7 @@ const BarcodeSection = ({
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].ExpiryDate}
                         onChangeText={(value) =>
-                          handleBarcodeInputChange(value, index, "ExpiryDate")
+                          handleFieldChange(value, index, "ExpiryDate")
                         }
                       />
                       <Text style={styles.label}>Serial Number</Text>
@@ -268,20 +188,19 @@ const BarcodeSection = ({
                         style={[styles.input, { textAlign: "center" }]}
                         value={scannedData[index].Serial}
                         onChangeText={(value) =>
-                          handleBarcodeInputChange(value, index, "Serial")
+                          handleFieldChange(value, index, "Serial")
                         }
                       />
                     </View>
                   )}
 
-                  {/* Render medication details section */}
                   <MedicationDetailsSection
                     drugNames={drugNames}
                     selectedDrugName={selectedDrugNames[index]}
                     handleDrugNameChange={(value) =>
                       handleDrugNameChange(value, index)
                     }
-                    handleFieldChange={handleFieldChange} // Pass handleFieldChange as a prop
+                    handleFieldChange={handleFieldChange}
                     donationForm={donationForm}
                     setDonationForm={setDonationForm}
                     focusedInput={focusedInput}
@@ -291,7 +210,6 @@ const BarcodeSection = ({
                 </View>
               ))}
 
-              {/* Buttons for adding more sections and adding to donation */}
               <View style={styles.bottomButtonsContainer}>
                 <TouchableWithoutFeedback
                   onPress={handleAddMore}

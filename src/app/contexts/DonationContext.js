@@ -193,6 +193,31 @@ export const DonationProvider = ({ children }) => {
     }
   };
 
+  const fetchRecipients = async () => {
+    try {
+      const response = await axios.get("http://1.1.1.250:3000/recipient/all");
+      const recipientsData = response.data;
+
+      const mappedRecipients = recipientsData.map((recipient) => ({
+        RecipientId: recipient.RecipientId,
+        RecipientName: recipient.RecipientName,
+      }));
+
+      setRecipients(mappedRecipients);
+      setSelectedRecipient(recipientsData[0]?.RecipientId || null);
+
+      if (mappedRecipients.length > 0) {
+        setDonationForm((prevState) => ({
+          ...prevState,
+          RecipientId: mappedRecipients[0].RecipientId,
+          RecipientName: mappedRecipients[0].RecipientName,
+        }));
+      }
+    } catch (error) {
+      handleAxiosError("Error fetching recipients:", error);
+    }
+  };
+
   const addDonation = async () => {
     try {
       const requiredFields = [
@@ -291,30 +316,6 @@ export const DonationProvider = ({ children }) => {
     }
   };
 
-  const fetchRecipients = async () => {
-    try {
-      const response = await axios.get("http://1.1.1.250:3000/recipient/all");
-      const recipientsData = response.data;
-
-      const mappedRecipients = recipientsData.map((recipient) => ({
-        RecipientId: recipient.RecipientId,
-        RecipientName: recipient.RecipientName,
-      }));
-
-      setRecipients(mappedRecipients);
-
-      if (mappedRecipients.length > 0) {
-        setDonationForm((prevState) => ({
-          ...prevState,
-          RecipientId: mappedRecipients[0].RecipientId,
-          RecipientName: mappedRecipients[0].RecipientName,
-        }));
-      }
-    } catch (error) {
-      handleAxiosError("Error fetching recipients:", error);
-    }
-  };
-
   const updateDonation = async (donationId, updatedData) => {
     try {
       const response = await fetch(`/donation/${donationId}`, {
@@ -343,45 +344,6 @@ export const DonationProvider = ({ children }) => {
       throw error;
     }
   };
-
-  // const handleAxiosError = (message, error) => {
-  //   console.error(message, error);
-  //   if (error.response) {
-  //     console.error("Server responded with error:", error.response.status);
-  //   } else if (error.request) {
-  //     console.error("No response received from server:", error.request);
-  //   } else {
-  //     console.error("Error setting up the request:", error.message);
-  //   }
-  // };
-
-  // const handleAsyncStorageError = (message, error) => {
-  //   console.error(message, error);
-  //   if (error.code === "ERR_STORAGE_FULL") {
-  //     console.error("Storage is full. Please free up space.");
-  //   } else if (error.code === "ERR_STORAGE_PERMISSION_DENIED") {
-  //     console.error("Storage permission denied. Please grant permission.");
-  //   } else {
-  //     console.error("Failed to save donations to AsyncStorage:", error.message);
-  //   }
-  // };
-
-  // const handleFetchDataError = (error) => {
-  //   console.error("Error fetching data:", error);
-  //   showAlert("Error", "Failed to fetch data. Please try again later.");
-  // };
-
-  // const handleFetchDonationsError = (error) => {
-  //   if (error.response && error.response.status === 404) {
-  //     console.error("Donations not found. The server returned a 404 error.");
-  //   } else if (error.code === "ECONNREFUSED") {
-  //     console.error(
-  //       "Connection refused. Please check your network connection."
-  //     );
-  //   } else {
-  //     console.error("Failed to fetch donations:", error.message);
-  //   }
-  // };
 
   const handleAxiosError = (message, error) => {
     console.error(message, error);
@@ -437,8 +399,77 @@ export const DonationProvider = ({ children }) => {
     openCamera();
   };
 
+  // const handleBarcodeScanned = ({ type, data }) => {
+  //   console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
+  //   try {
+  //     // Parse scanned data
+  //     const response = { GTIN: "", LOT: "", ExpiryDate: "", Serial: "" };
+  //     let responseCode = data;
+
+  //     const prefixes = [
+  //       { prefix: "01", key: "GTIN", length: 14 },
+  //       { prefix: "10", key: "LOT" },
+  //       { prefix: "17", key: "ExpiryDate", length: 6 },
+  //       { prefix: "21", key: "Serial" },
+  //     ];
+
+  //     prefixes.forEach(({ prefix, key, length }) => {
+  //       const position = responseCode.indexOf(prefix);
+
+  //       if (position !== -1) {
+  //         const start = position + prefix.length;
+  //         let end;
+
+  //         if (length) {
+  //           end = start + length;
+  //         } else {
+  //           const gsPosition = responseCode.indexOf(
+  //             String.fromCharCode(29),
+  //             start
+  //           );
+  //           end = gsPosition !== -1 ? gsPosition : responseCode.length;
+  //         }
+
+  //         response[key] = responseCode.substring(start, end);
+  //         responseCode =
+  //           responseCode.slice(0, position) + responseCode.slice(end);
+  //       }
+  //     });
+
+  //     console.log("Scanned data:", response); // Additional logging
+
+  //     // Update scannedData state immutably
+  //     setScannedData((prevData) => [...(prevData || []), response]);
+  //     setBarcodeData((prevBarcodeData) => [
+  //       ...(prevBarcodeData || []),
+  //       response,
+  //     ]);
+  //     setCameraVisible(false); // Close camera modal after scanning
+  //     setModalVisible(true);
+
+  //     console.log("Donation Form before update:", donationForm);
+
+  //     // Update the donationForm with scanned barcode data
+  //     setDonationForm((prevForm) => ({
+  //       ...prevForm,
+  //       LOT: response.LOT || prevForm.LOT,
+  //       ExpiryDate: response.ExpiryDate || prevForm.ExpiryDate,
+  //       GTIN: response.GTIN || prevForm.GTIN,
+  //     }));
+
+  //     console.log("Donation Form after update:", donationForm);
+  //   } catch (error) {
+  //     console.error("Error parsing scanned data:", error);
+  //     // Handle error
+  //   }
+  // };
+
   const handleBarcodeScanned = ({ type, data }) => {
     console.log(`Barcode with type ${type} and data ${data} has been scanned!`);
+
+    // Log the raw data to ensure it's in the expected format
+    console.log("Raw barcode data:", data);
+
     try {
       // Parse scanned data
       const response = { GTIN: "", LOT: "", ExpiryDate: "", Serial: "" };
@@ -502,6 +533,107 @@ export const DonationProvider = ({ children }) => {
     }
   };
 
+  // const handleSubmit = async () => {
+  //   try {
+  //     console.log("Submitting donation...");
+  //     Keyboard.dismiss();
+
+  //     console.log("Donation Form Data before update:", donationForm);
+
+  //     // Logging selectedDrugName before updating the form
+  //     console.log("Selected Drug Name before update:", selectedDrugName);
+
+  //     // Update the donationForm with the necessary fields
+  //     const updatedForm = {
+  //       ...donationForm, // Copy the existing donation form data
+  //       RecipientId: selectedRecipient, // Update RecipientId
+  //       Presentation: Presentation, // Update Presentation
+  //       Form: Form, // Update Form
+  //       Quantity: Quantity, // Update Quantity
+  //       DonationPurpose: DonationPurpose, // Update DonationPurpose
+  //       DonationDate: DonationDate, // Update DonationDate
+  //       ProductionDate: ProductionDate, // Update ProductionDate
+  //       Laboratory: Laboratory, // Update Laboratory
+  //       LaboratoryCountry: LaboratoryCountry, // Update LaboratoryCountry
+  //       GTIN: undefined, // Reset GTIN
+  //       LOT: undefined, // Reset LOT
+  //       Serial: undefined, // Reset Serial
+  //       ExpiryDate: undefined, // Reset ExpiryDate
+  //       scannedData: scannedData, // Update scannedData
+  //       medicationDetails: medicationDetails, // Update medicationDetails
+  //       selectedDrugName: selectedDrugName, // Update selectedDrugName
+  //     };
+
+  //     console.log("Donation Form Data after update:", updatedForm);
+
+  //     // Logging selectedDrugName after updating the form
+  //     console.log("Selected Drug Name after update:", selectedDrugName);
+
+  //     // Add barcode data to the donationForm
+  //     const lastBarcode = barcodeData[barcodeData.length - 1];
+  //     console.log("Last Barcode Data:", lastBarcode);
+  //     if (lastBarcode) {
+  //       updatedForm.LOT = lastBarcode.LOT || updatedForm.LOT;
+  //       updatedForm.ExpiryDate =
+  //         lastBarcode.ExpiryDate || updatedForm.ExpiryDate;
+  //       updatedForm.GTIN = lastBarcode.GTIN || updatedForm.GTIN;
+  //       updatedForm.Serial = lastBarcode.Serial || updatedForm.Serial;
+  //     }
+
+  //     // Add donation
+  //     await addDonation(updatedForm);
+
+  //     // Clear form fields only if submission is successful
+  //     setDonationForm({
+  //       DonorId: "",
+  //       RecipientId: "",
+  //       DrugName: "",
+  //       Quantity: "",
+  //       Presentation: "",
+  //       Form: "",
+  //       DonationPurpose: "",
+  //       DonationDate: "",
+  //       ProductionDate: "2024-03-31",
+  //       Laboratory: "",
+  //       LaboratoryCountry: "",
+  //       LOT: "",
+  //       ExpiryDate: "",
+  //       GTIN: "",
+  //       Serial: "",
+  //       scannedData: [],
+  //       medicationDetails: [],
+  //       selectedDrugName: "",
+  //     });
+
+  //     // Toggle the reset flag to force reset the form fields
+  //     setResetForm(true);
+
+  //     // Clear barcode data
+  //     setBarcodeData([]);
+
+  //     // Display success message
+  //     setSuccessVisible(true);
+
+  //     // Display confirmation modal
+  //     handleConfirmation();
+
+  //     // Hide the success message after 2 seconds
+  //     setTimeout(() => {
+  //       setSuccessVisible(false);
+  //     }, 2000);
+
+  //     console.log("Donation submitted successfully");
+  //   } catch (error) {
+  //     console.error("Error submitting donation:", error);
+  //     if (error.message === "Failed to add donation") {
+  //       setErrorMessage("Failed to add donation.");
+  //     } else {
+  //       // setErrorMessage(error.message);
+  //     }
+  //     setErrorVisible(true);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     try {
       console.log("Submitting donation...");
@@ -509,34 +641,21 @@ export const DonationProvider = ({ children }) => {
 
       console.log("Donation Form Data before update:", donationForm);
 
-      // Logging selectedDrugName before updating the form
-      console.log("Selected Drug Name before update:", selectedDrugName);
-
       // Update the donationForm with the necessary fields
       const updatedForm = {
-        ...donationForm, // Copy the existing donation form data
-        RecipientId: selectedRecipient, // Update RecipientId
-        Presentation: Presentation, // Update Presentation
-        Form: Form, // Update Form
-        Quantity: Quantity, // Update Quantity
-        DonationPurpose: DonationPurpose, // Update DonationPurpose
-        DonationDate: DonationDate, // Update DonationDate
-        ProductionDate: ProductionDate, // Update ProductionDate
-        Laboratory: Laboratory, // Update Laboratory
-        LaboratoryCountry: LaboratoryCountry, // Update LaboratoryCountry
-        GTIN: undefined, // Reset GTIN
-        LOT: undefined, // Reset LOT
-        Serial: undefined, // Reset Serial
-        ExpiryDate: undefined, // Reset ExpiryDate
-        scannedData: scannedData, // Update scannedData
-        medicationDetails: medicationDetails, // Update medicationDetails
-        selectedDrugName: selectedDrugName, // Update selectedDrugName
+        ...donationForm,
+        RecipientId: selectedRecipient,
+        Presentation: Presentation,
+        Form: Form,
+        Quantity: Quantity,
+        DonationPurpose: DonationPurpose, // Ensure that this is correctly set
+        DonationDate: DonationDate,
+        ProductionDate: ProductionDate,
+        Laboratory: Laboratory,
+        LaboratoryCountry: LaboratoryCountry,
       };
 
       console.log("Donation Form Data after update:", updatedForm);
-
-      // Logging selectedDrugName after updating the form
-      console.log("Selected Drug Name after update:", selectedDrugName);
 
       // Add barcode data to the donationForm
       const lastBarcode = barcodeData[barcodeData.length - 1];
@@ -549,33 +668,10 @@ export const DonationProvider = ({ children }) => {
         updatedForm.Serial = lastBarcode.Serial || updatedForm.Serial;
       }
 
+      console.log("Donation Form Data after update:", updatedForm);
+
       // Add donation
       await addDonation(updatedForm);
-
-      // Clear form fields only if submission is successful
-      setDonationForm({
-        DonorId: "",
-        RecipientId: "",
-        DrugName: "",
-        Quantity: "",
-        Presentation: "",
-        Form: "",
-        DonationPurpose: "",
-        DonationDate: "",
-        ProductionDate: "2024-03-31",
-        Laboratory: "",
-        LaboratoryCountry: "",
-        LOT: "",
-        ExpiryDate: "",
-        GTIN: "",
-        Serial: "",
-        scannedData: [],
-        medicationDetails: [],
-        selectedDrugName: "",
-      });
-
-      // Toggle the reset flag to force reset the form fields
-      setResetForm(true);
 
       // Clear barcode data
       setBarcodeData([]);
@@ -585,11 +681,6 @@ export const DonationProvider = ({ children }) => {
 
       // Display confirmation modal
       handleConfirmation();
-
-      // Hide the success message after 2 seconds
-      setTimeout(() => {
-        setSuccessVisible(false);
-      }, 2000);
 
       console.log("Donation submitted successfully");
     } catch (error) {
@@ -603,18 +694,54 @@ export const DonationProvider = ({ children }) => {
     }
   };
 
+  // const handleAddToDonation = () => {
+  //   console.log("Donation Form Data:", donationForm);
+  //   console.log("Barcode Data:", barcodeData);
+
+  //   try {
+  //     const scannedData = barcodeData.map((data) => ({
+  //       GTIN: data.GTIN,
+  //       LOT: data.LOT,
+  //       ExpiryDate: data.ExpiryDate,
+  //       Serial: data.Serial,
+  //     }));
+  //     const medicationDetails = barcodeData.map((data) => ({
+  //       DrugName: data.DrugName,
+  //       Presentation: data.Presentation,
+  //       Form: data.Form,
+  //       Laboratory: data.Laboratory,
+  //       LaboratoryCountry: data.LaboratoryCountry,
+  //       Quantity: data.Quantity,
+  //     }));
+
+  //     console.log("Medication Details:", scannedData, medicationDetails);
+
+  //     setDonationForm((prevForm) => ({
+  //       ...prevForm,
+  //       scannedData: [...prevForm.scannedData, ...scannedData],
+  //       medicationDetails: [
+  //         ...prevForm.medicationDetails,
+  //         ...medicationDetails,
+  //       ],
+  //     }));
+  //     setBarcodeData([]);
+  //     setScannedData(null);
+  //   } catch (error) {
+  //     console.error("Error adding medication details to donation:", error);
+  //   }
+  // };
+
   const handleAddToDonation = () => {
-    console.log("Donation Form Data:", donationForm);
     console.log("Barcode Data:", barcodeData);
 
     try {
-      const scannedData = barcodeData.map((data) => ({
+      const updatedScannedData = barcodeData.map((data) => ({
         GTIN: data.GTIN,
         LOT: data.LOT,
         ExpiryDate: data.ExpiryDate,
         Serial: data.Serial,
       }));
-      const medicationDetails = barcodeData.map((data) => ({
+      const updatedMedicationDetails = barcodeData.map((data) => ({
         DrugName: data.DrugName,
         Presentation: data.Presentation,
         Form: data.Form,
@@ -623,14 +750,18 @@ export const DonationProvider = ({ children }) => {
         Quantity: data.Quantity,
       }));
 
-      console.log("Medication Details:", scannedData, medicationDetails);
+      console.log(
+        "Updated Medication Details:",
+        updatedScannedData,
+        updatedMedicationDetails
+      );
 
       setDonationForm((prevForm) => ({
         ...prevForm,
-        scannedData: [...prevForm.scannedData, ...scannedData],
+        scannedData: [...prevForm.scannedData, ...updatedScannedData],
         medicationDetails: [
           ...prevForm.medicationDetails,
-          ...medicationDetails,
+          ...updatedMedicationDetails,
         ],
       }));
       setBarcodeData([]);
@@ -703,7 +834,17 @@ export const DonationProvider = ({ children }) => {
         setLaboratoryCountry,
         Quantity,
         setQuantity,
-        handleFieldChange
+        LOT,
+        setLOT,
+        GTIN,
+        setGTIN,
+        ExpiryDate,
+        setExpiryDate,
+        Serial,
+        setSerial,
+        DonationPurpose,
+        setDonationPurpose,
+        handleFieldChange,
       }}
     >
       {children}

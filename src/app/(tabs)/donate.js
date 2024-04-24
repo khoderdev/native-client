@@ -23,6 +23,7 @@ const Donate = () => {
     donors,
     handleSubmit,
     recipients,
+    setRecipients,
     selectedRecipient,
     setSelectedRecipient,
     selectedDonorId,
@@ -35,7 +36,8 @@ const Donate = () => {
     fetchDrugNames,
     setModalVisible,
     focusedInput,
-    setFocusedInput,
+    DonationPurpose,
+    setDonationPurpose,
     handleFocus,
     handleBlur,
     handleBarcodeScanned,
@@ -51,9 +53,33 @@ const Donate = () => {
   }, []);
 
   // Handler for submit button pressed
+  // Handler for submit button pressed
   const handlePressSubmitButton = () => {
     console.log("Submit button pressed. Donation Form:", donationForm);
     handleSubmit();
+
+    // Reset form fields after submission
+    setDonationForm({
+      DonorId: "",
+      RecipientId: "",
+      DrugName: "",
+      Quantity: "",
+      Presentation: "",
+      Form: "",
+      DonationPurpose: "",
+      DonationDate: "",
+      ProductionDate: "2024-03-31",
+      Laboratory: "",
+      LaboratoryCountry: "",
+      LOT: "",
+      ExpiryDate: "",
+      GTIN: "",
+      Serial: "",
+      scannedData: [],
+      medicationDetails: [],
+      selectedDrugName: "",
+      selectedRecipient: "",
+    });
   };
 
   console.log("Rendering Donate component. Donation Form:", donationForm);
@@ -74,6 +100,8 @@ const Donate = () => {
                 setSelectedRecipient(value);
               }}
               recipients={recipients}
+              setSelectedRecipient={setSelectedRecipient}
+              setDonationPurpose={setDonationPurpose}
               donationForm={donationForm}
               setDonationForm={setDonationForm}
               focusedInput={focusedInput}
