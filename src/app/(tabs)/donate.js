@@ -13,6 +13,7 @@ import {
   DonationProvider,
   useDonationContext,
 } from "../contexts/DonationContext";
+import { useContext } from "react";
 
 const Donate = () => {
   const {
@@ -43,9 +44,61 @@ const Donate = () => {
     handleBarcodeScanned,
     handleFieldChange,
   } = useDonationContext();
-
+const [forms, setForms] = useState([{}]);
   const [barcodeData, setBarcodeData] = useState([]); // Define barcodeData state in Donate component
+const addForm = () => {
+  setForms([...forms, {}]);
+};
 
+const DonationForm = () => {
+  const { donationForm, setDonationForm } = useDonationContext();
+
+  const handleInputChange = (name, value) => {
+    setDonationForm({
+      ...donationForm,
+      [name]: value,
+    });
+  };
+
+  return (
+    <View>
+     
+      {/* Add more fields as needed */}
+      <BarcodeSection
+            setModalVisible={setModalVisible}
+            donationForm={donationForm}
+            setDonationForm={setDonationForm}
+            setSelectedDrugName={setSelectedDrugName}
+            barcodeData={barcodeData} // Pass barcodeData as prop
+            setBarcodeData={setBarcodeData} // Pass setBarcodeData as prop
+            handleBarcodeScanned={handleBarcodeScanned}
+            handleAddToDonation={handleAddToDonation}
+            scannedData={scannedData}
+            setScannedData={setScannedData}
+            drugNames={drugNames}
+            fetchDrugNames={fetchDrugNames}
+            handleFieldChange={handleFieldChange}
+          />
+
+          {/* Medication Details Section */}
+          <MedicationDetailsSection
+            selectedDrugName={donationForm.selectedDrugName}
+            handleDrugNameChange={(value) => {
+              console.log("Selected drug name changed:", value);
+              setDonationForm({ ...donationForm, selectedDrugName: value });
+            }}
+            donationForm={donationForm}
+            setDonationForm={setDonationForm}
+            focusedInput={focusedInput}
+            handleFocus={handleFocus}
+            handleBlur={handleBlur}
+            drugNames={drugNames}
+            handleFieldChange={handleFieldChange}
+          />
+
+    </View>
+  );
+};
   // Fetch donors when component mounts
   useEffect(() => {
     fetchDonors();
@@ -81,7 +134,7 @@ const Donate = () => {
       selectedRecipient: "",
     });
   };
-
+  
   console.log("Rendering Donate component. Donation Form:", donationForm);
 
   return (
@@ -143,17 +196,29 @@ const Donate = () => {
             handleFieldChange={handleFieldChange}
           />
 
-          {/* Submit Button */}
-          <TouchableWithoutFeedback onPress={handlePressSubmitButton}>
-            <View style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Submit</Text>
-            </View>
-          </TouchableWithoutFeedback>
+<View>
+    {forms.map((form, index) => (
+      <DonationForm key={index} />
+    ))}
+    <TouchableWithoutFeedback onPress={addForm}>
+      <View style={styles.addButton}>
+        <Text style={styles.addButtonText}>Add</Text>
+      </View>
+    </TouchableWithoutFeedback>
+    <TouchableWithoutFeedback onPress={handlePressSubmitButton}>
+      <View style={styles.submitButton}>
+        <Text style={styles.submitButtonText}>Submit</Text>
+      </View>
+    </TouchableWithoutFeedback>
+  </View>
+
         </View>
       </ScrollView>
     </DonationProvider>
+    
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -186,6 +251,22 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderColor: "#00a651",
     marginTop: 10,
+  },
+  addButton: {
+    width: 100,
+    alignSelf: "center",
+    paddingHorizontal: 23,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 60,
+    borderColor: "#00a651",
+    marginTop: 10,
+  },
+  addButtonText: {
+    color: "#00a651",
+    fontSize: 16,
+    fontWeight: "bold",
+    alignSelf: "center",
   },
 });
 

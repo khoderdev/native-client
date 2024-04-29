@@ -16,6 +16,8 @@ import { Camera } from "expo-camera";
 import MedicationDetailsSection from "./MedicationDetailsSection";
 import { useDonationContext } from "../app/contexts/DonationContext";
 import { AntDesign } from "@expo/vector-icons";
+import * as Permissions from 'expo-permissions';
+
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -40,10 +42,12 @@ const BarcodeSection = ({
     handleBarcodeScanned,
   } = useDonationContext();
 
+ useEffect(() => {
   setLOT((response && response.LOT) || donationForm.LOT);
   setExpiryDate((response && response.ExpiryDate) || donationForm.ExpiryDate);
   setGTIN((response && response.GTIN) || donationForm.GTIN);
   setSerial((response && response.Serial) || donationForm.Serial);
+}, [response, donationForm]);
 
   const [cameraVisible, setCameraVisible] = useState(false);
   const [drugCount, setDrugCount] = useState(1);
@@ -56,11 +60,22 @@ const BarcodeSection = ({
   const [addMoreButtonPressed, setAddMoreButtonPressed] = useState(false);
   const [addToDonationButtonPressed, setAddToDonationButtonPressed] =
     useState(false);
+    const [hasCameraPermission, setHasCameraPermission] = useState(null);
+   
 
-  const openCamera = () => {
-    setCameraVisible(true);
-  };
-
+useEffect(() => {
+  (async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setHasCameraPermission(status === 'granted');
+  })();
+}, []);
+    const openCamera = () => {
+      if (hasCameraPermission) {
+        setCameraVisible(true);
+      } else {
+        alert('Sorry, we need camera permissions to make this work!');
+      }
+    };
   const handleBarcodeScannedLocal = (data) => {
     handleBarcodeScanned(data);
     setCameraVisible(false);
@@ -82,7 +97,7 @@ const BarcodeSection = ({
   const handleManualAddMore = () => {
     setDrugCount((prevCount) => prevCount + 1);
     setSelectedDrugNames((prevNames) => [...prevNames, ""]);
-    setIsModalVisible(true);
+    setModalVisible(true);
   };
 
   const handleFocus = (inputName) => {
@@ -100,6 +115,9 @@ const BarcodeSection = ({
       return updatedNames;
     });
   };
+  const handleManualDataEntry = () => {
+  setModalVisible(true);
+};
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -115,7 +133,7 @@ const BarcodeSection = ({
           />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleManualAddMore} activeOpacity={0.6}>
+        <TouchableOpacity onPress={handleManualDataEntry} activeOpacity={0.6}>
           <Image
             source={require("../../assets/pressHere.png")}
             style={{
