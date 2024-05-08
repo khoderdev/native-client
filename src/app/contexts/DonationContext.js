@@ -107,7 +107,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchDrugNames = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/drugs/all");
+      const response = await axios.get("https://apiv2.medleb.org/drugs/all");
       const drugsData = response.data;
       const drugNames = drugsData.map((drug) => drug.DrugName);
 
@@ -154,7 +154,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchDonations = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/donation/all");
+      const response = await axios.get("https://apiv2.medleb.org/donation/all");
       const data = response.data.map((donation) => ({
         ...donation,
         DonationDate: new Date(donation.DonationDate).toLocaleDateString(
@@ -175,7 +175,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchDonors = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/donor/all");
+      const response = await axios.get("https://apiv2.medleb.org/donor/all");
       const donorsData = response.data;
 
       setDonors(donorsData);
@@ -195,7 +195,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchRecipients = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/recipient/all");
+      const response = await axios.get("https://apiv2.medleb.org/recipient/all");
       const recipientsData = response.data;
 
       const mappedRecipients = recipientsData.map((recipient) => ({
@@ -275,7 +275,7 @@ export const DonationProvider = ({ children }) => {
 
       // Send POST request to add donation
       const response = await axios.post(
-        "http://85.112.70.8:3000/donation/add",
+        "https://apiv2.medleb.org/donation/add",
         data,
         {
           headers: {
@@ -300,7 +300,7 @@ export const DonationProvider = ({ children }) => {
 
   const fetchDrugs = async () => {
     try {
-      const response = await axios.get("http://85.112.70.8:3000/drugs/all");
+      const response = await axios.get("https://apiv2.medleb.org/drugs/all");
       const drugsData = response.data;
 
       setDrugs(drugsData);

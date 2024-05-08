@@ -35,7 +35,7 @@
 //         try {
 //             // Make a PUT request to the server API endpoint with the updated donation data
 //             const response = await axios.put(
-//                 `http://85.112.70.8:3000/donation/${DonationId}`,
+//                 `https://apiv2.medleb.org/donation/${DonationId}`,
 //                 updatedData
 //             );
 
@@ -294,7 +294,7 @@
 //         try {
 //             // Make a PUT request to the server API endpoint with the updated donation data
 //             const response = await axios.put(
-//                 `http://85.112.70.8:3000/donation/${DonationId}`,
+//                 `https://apiv2.medleb.org/donation/${DonationId}`,
 //                 updatedData
 //             );
 
